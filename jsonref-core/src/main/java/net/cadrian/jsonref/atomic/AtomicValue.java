@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.cadrian.jsonref.SerializationException;
+
 enum AtomicValue {
 	STRING(String.class) {
 		@Override
@@ -159,7 +161,7 @@ enum AtomicValue {
 					| IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException | NoSuchMethodException
 					| SecurityException e) {
-				throw new RuntimeException(e);
+				throw new SerializationException(e);
 			}
 		}
 	};

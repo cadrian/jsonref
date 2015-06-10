@@ -26,33 +26,13 @@ import java.util.Map;
 
 import net.cadrian.jsonref.JsonAtomicValues;
 import net.cadrian.jsonref.SerializationData;
+import net.cadrian.jsonref.SerializationException;
 
-public class SerializationObject extends AbstractSerializationData {
-	private final Class<?> type;
-	private final int ref;
+public class SerializationObject extends AbstractSerializationObject {
 	private final Map<String, SerializationData> properties = new HashMap<>();
 
-	public SerializationObject(final Class<?> type, final int id) {
-		this.type = type;
-		this.ref = id;
-	}
-
-	/**
-	 * Getter type
-	 *
-	 * @return the type
-	 */
-	public Class<?> getType() {
-		return type;
-	}
-
-	/**
-	 * Getter id
-	 *
-	 * @return the id
-	 */
-	public int getRef() {
-		return ref;
+	public SerializationObject(final Class<?> type, final int ref) {
+		super(type, ref);
 	}
 
 	/**
@@ -83,7 +63,8 @@ public class SerializationObject extends AbstractSerializationData {
 	}
 
 	@Override
-	public void toJson(final StringBuilder result, final JsonAtomicValues converter) {
+	public void toJson(final StringBuilder result,
+			final JsonAtomicValues converter) {
 		result.append('{');
 		String sep = "";
 		for (final Map.Entry<String, SerializationData> value : properties
@@ -99,8 +80,8 @@ public class SerializationObject extends AbstractSerializationData {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	<T> T fromJson(final SerializationHeap heap, final JsonAtomicValues converter,
-			final Class<? extends T> clazz) {
+	<T> T fromJson(final SerializationHeap heap,
+			final JsonAtomicValues converter, final Class<? extends T> clazz) {
 		Object result = null;
 		if (heap != null) {
 			result = heap.getDeser(ref);
@@ -136,7 +117,7 @@ public class SerializationObject extends AbstractSerializationData {
 			} catch (final ClassNotFoundException | InstantiationException
 					| IllegalAccessException | IntrospectionException
 					| IllegalArgumentException | InvocationTargetException e) {
-				throw new RuntimeException("fromJson", e);
+				throw new SerializationException(e);
 			}
 		}
 		return (T) result;

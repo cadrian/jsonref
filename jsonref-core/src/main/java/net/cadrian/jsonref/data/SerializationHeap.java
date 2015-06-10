@@ -21,14 +21,14 @@ import java.util.List;
 import net.cadrian.jsonref.JsonAtomicValues;
 
 public class SerializationHeap extends AbstractSerializationData {
-	private final List<SerializationObject> heap = new ArrayList<>();
+	private final List<AbstractSerializationObject> heap = new ArrayList<>();
 	private List<Object> deser;
 
-	public SerializationObject get(final int ref) {
+	public AbstractSerializationObject get(final int ref) {
 		return heap.get(ref);
 	}
 
-	public void add(final SerializationObject object) {
+	public void add(final AbstractSerializationObject object) {
 		assert object.getRef() == nextRef() : "wrong ref " + object.getRef()
 				+ " != " + nextRef();
 		heap.add(object);
@@ -39,7 +39,8 @@ public class SerializationHeap extends AbstractSerializationData {
 	}
 
 	@Override
-	public void toJson(final StringBuilder result, final JsonAtomicValues converter) {
+	public void toJson(final StringBuilder result,
+			final JsonAtomicValues converter) {
 		final int n = heap.size();
 		assert n > 0 : "empty heap?!";
 		if (n == 1) {
@@ -47,7 +48,7 @@ public class SerializationHeap extends AbstractSerializationData {
 		} else {
 			result.append('<');
 			for (int i = 0; i < n; i++) {
-				final SerializationObject ref = heap.get(i);
+				final AbstractSerializationObject ref = heap.get(i);
 				assert ref.getRef() == i : "wrong ref " + ref.getRef() + " != "
 						+ i;
 				if (i > 0) {
@@ -66,8 +67,8 @@ public class SerializationHeap extends AbstractSerializationData {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	<T> T fromJson(final SerializationHeap heap, final JsonAtomicValues converter,
-			final Class<? extends T> clazz) {
+	<T> T fromJson(final SerializationHeap heap,
+			final JsonAtomicValues converter, final Class<? extends T> clazz) {
 		return (T) fromJson(converter);
 	}
 
