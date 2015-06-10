@@ -22,9 +22,9 @@ import java.sql.Timestamp;
 import org.junit.Test;
 
 public class TestJsonSerializer {
-
+	
 	@Test
-	public void test() {
+	public void testCycle() {
 		final JsonSerializer ser = new JsonSerializer();
 		final Pojo a = new Pojo();
 		a.setValue("a");
