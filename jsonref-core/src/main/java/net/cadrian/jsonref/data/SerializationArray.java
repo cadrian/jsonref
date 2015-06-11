@@ -52,10 +52,11 @@ public class SerializationArray extends AbstractSerializationObject {
 	<T> T fromJson(final SerializationHeap heap,
 			final Class<? extends T> propertyType, final JsonConverter converter) {
 		final T result;
-		if (propertyType.isArray()) {
-			result = fromJsonArray(heap, propertyType, converter);
-		} else if (Collection.class.isAssignableFrom(propertyType)) {
+		if (propertyType == null
+				|| Collection.class.isAssignableFrom(propertyType)) {
 			result = fromJsonCollection(heap, propertyType, converter);
+		} else if (propertyType.isArray()) {
+			result = fromJsonArray(heap, propertyType, converter);
 		} else if (Map.class.isAssignableFrom(propertyType)) {
 			result = fromJsonMap(heap, propertyType, converter);
 		} else {
@@ -88,26 +89,27 @@ public class SerializationArray extends AbstractSerializationObject {
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonCollection(final SerializationHeap heap,
 			final Class<? extends T> propertyType, final JsonConverter converter) {
-		assert Collection.class.isAssignableFrom(propertyType) : "not a collection";
+		assert propertyType == null
+				|| Collection.class.isAssignableFrom(propertyType) : "not a collection";
 
-		final Collection<Object> result = converter
-				.newCollection((Class<? extends Collection<Object>>) propertyType);
-		if (heap != null) {
-			heap.setDeser(ref, result);
-		}
+				final Collection<Object> result = converter
+						.newCollection((Class<? extends Collection<Object>>) propertyType);
+				if (heap != null) {
+					heap.setDeser(ref, result);
+				}
 
-		for (final SerializationData data : array) {
-			result.add(((AbstractSerializationData) data).fromJson(heap, null,
-					converter));
-		}
+				for (final SerializationData data : array) {
+					result.add(((AbstractSerializationData) data).fromJson(heap, null,
+							converter));
+				}
 
-		return (T) result;
+				return (T) result;
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonMap(final SerializationHeap heap,
 			final Class<? extends T> propertyType, final JsonConverter converter) {
-		assert Collection.class.isAssignableFrom(propertyType) : "not a collection";
+		assert Map.class.isAssignableFrom(propertyType) : "not a map";
 
 		final Map<Object, Object> result = converter
 				.newMap((Class<? extends Map<Object, Object>>) propertyType);

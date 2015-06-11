@@ -21,7 +21,9 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -104,15 +106,16 @@ public class TestDeserializationProcessor {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testCollection() {
 		final String string1 = "foo";
 		when(converter.fromJson("\"string1\"", null)).thenReturn(string1);
 		final String string2 = "bar";
 		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
-		@SuppressWarnings("unchecked")
-		final Class<? extends Collection<Object>> collectionOfObjectsType = (Class<? extends Collection<Object>>) Collection.class;
-		when(converter.newCollection(collectionOfObjectsType)).thenReturn(
-				new ArrayList<Object>());
+		when(
+				converter
+				.newCollection((Class<? extends Collection<Object>>) Collection.class))
+				.thenReturn(new ArrayList<Object>());
 
 		final Collection<?> objects = that.deserialize(
 				"[\"string1\",\"string2\"]", converter, Collection.class);
@@ -123,8 +126,21 @@ public class TestDeserializationProcessor {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	public void testMapOfStrings() {
-		// TODO
+		final String string1 = "foo";
+		when(converter.fromJson("\"string1\"", null)).thenReturn(string1);
+		final String string2 = "bar";
+		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
+		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
+		.thenReturn(new HashMap<Object, Object>());
+
+		final Map<?, ?> objects = that.deserialize(
+				"[[\"string1\",\"string2\"],[\"string2\",\"string1\"]]",
+				converter, Map.class);
+		assertEquals(2, objects.size());
+		assertEquals(string1, objects.get(string2));
+		assertEquals(string2, objects.get(string1));
 	}
 
 	@Test
