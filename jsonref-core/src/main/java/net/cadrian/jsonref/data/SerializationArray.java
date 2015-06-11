@@ -92,18 +92,19 @@ public class SerializationArray extends AbstractSerializationObject {
 		assert propertyType == null
 				|| Collection.class.isAssignableFrom(propertyType) : "not a collection";
 
-				final Collection<Object> result = converter
-						.newCollection((Class<? extends Collection<Object>>) propertyType);
-				if (heap != null) {
-					heap.setDeser(ref, result);
-				}
+		@SuppressWarnings("rawtypes")
+		final Collection<Object> result = (Collection<Object>) converter
+				.newCollection((Class<Collection>) propertyType);
+		if (heap != null) {
+			heap.setDeser(ref, result);
+		}
 
-				for (final SerializationData data : array) {
-					result.add(((AbstractSerializationData) data).fromJson(heap, null,
-							converter));
-				}
+		for (final SerializationData data : array) {
+			result.add(((AbstractSerializationData) data).fromJson(heap, null,
+					converter));
+		}
 
-				return (T) result;
+		return (T) result;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -111,8 +112,9 @@ public class SerializationArray extends AbstractSerializationObject {
 			final Class<? extends T> propertyType, final JsonConverter converter) {
 		assert Map.class.isAssignableFrom(propertyType) : "not a map";
 
-		final Map<Object, Object> result = converter
-				.newMap((Class<? extends Map<Object, Object>>) propertyType);
+		@SuppressWarnings("rawtypes")
+		final Map<Object, Object> result = (Map<Object, Object>) converter
+				.newMap((Class<Map>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}

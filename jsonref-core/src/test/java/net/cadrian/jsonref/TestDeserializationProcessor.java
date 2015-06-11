@@ -106,16 +106,14 @@ public class TestDeserializationProcessor {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void testCollection() {
 		final String string1 = "foo";
 		when(converter.fromJson("\"string1\"", null)).thenReturn(string1);
 		final String string2 = "bar";
 		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
-		when(
-				converter
-						.newCollection((Class<? extends Collection<Object>>) Collection.class))
-				.thenReturn(new ArrayList<Object>());
+		when(converter.newCollection(Collection.class)).thenReturn(
+				new ArrayList());
 
 		final Collection<?> objects = that.deserialize(
 				"[\"string1\",\"string2\"]", converter, Collection.class);
@@ -126,14 +124,13 @@ public class TestDeserializationProcessor {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void testMapOfStringsInJsonArray() {
 		final String string1 = "foo";
 		when(converter.fromJson("\"string1\"", null)).thenReturn(string1);
 		final String string2 = "bar";
 		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
-		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
-				.thenReturn(new HashMap<Object, Object>());
+		when(converter.newMap(Map.class)).thenReturn(new HashMap());
 
 		final Map<?, ?> objects = that.deserialize(
 				"[[\"string1\",\"string2\"],[\"string2\",\"string1\"]]",
@@ -144,7 +141,7 @@ public class TestDeserializationProcessor {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void testMapOfStringsInJsonObject() {
 		final String string1 = "foo";
 		when(converter.fromJson("\"string1\"", String.class)).thenReturn(
@@ -154,8 +151,7 @@ public class TestDeserializationProcessor {
 		when(converter.fromJson("\"string2\"", String.class)).thenReturn(
 				string2);
 		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
-		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
-				.thenReturn(new HashMap<Object, Object>());
+		when(converter.newMap(Map.class)).thenReturn(new HashMap());
 
 		final Map<?, ?> objects = that.deserialize(
 				"{\"string1\":\"string2\",\"string2\":\"string1\"}", converter,
@@ -166,7 +162,7 @@ public class TestDeserializationProcessor {
 	}
 
 	@Test
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void testMapOfObjects() {
 		final String string1 = "foo";
 		when(converter.fromJson("\"string1\"", null)).thenReturn(string1);
@@ -176,8 +172,7 @@ public class TestDeserializationProcessor {
 		when(converter.fromJson("1", null)).thenReturn(now);
 		final Integer dontPanic = Integer.valueOf(42);
 		when(converter.fromJson("2", null)).thenReturn(dontPanic);
-		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
-				.thenReturn(new HashMap<Object, Object>());
+		when(converter.newMap(Map.class)).thenReturn(new HashMap());
 
 		final Map<?, ?> objects = that.deserialize(
 				"[[1,\"string1\"],[2,\"string2\"]]", converter, Map.class);

@@ -60,7 +60,8 @@ public interface JsonConverter {
 	 * @param wantedType
 	 * @return
 	 */
-	<T> Collection<T> newCollection(Class<? extends Collection<T>> wantedType);
+	Collection<?> newCollection(
+			@SuppressWarnings("rawtypes") Class<Collection> wantedType);
 
 	/**
 	 * Create a new map of the most appropriate type.
@@ -68,7 +69,7 @@ public interface JsonConverter {
 	 * @param wantedType
 	 * @return
 	 */
-	<K, V> Map<K, V> newMap(Class<? extends Map<K, V>> wantedType);
+	Map<?, ?> newMap(@SuppressWarnings("rawtypes") Class<Map> wantedType);
 
 	/**
 	 * Transient fields are not serialized.

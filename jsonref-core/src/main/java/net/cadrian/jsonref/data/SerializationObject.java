@@ -93,10 +93,9 @@ public class SerializationObject extends AbstractSerializationObject {
 			final Class<? extends T> propertyType, final JsonConverter converter) {
 		assert Map.class.isAssignableFrom(propertyType) : "not a map";
 
-		final Map<Object, Object> result;
-
-		result = converter
-				.newMap((Class<? extends Map<Object, Object>>) propertyType);
+		@SuppressWarnings("rawtypes")
+		final Map<Object, Object> result = (Map<Object, Object>) converter
+				.newMap((Class<Map>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}

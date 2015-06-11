@@ -34,6 +34,7 @@ import java.util.TreeSet;
 import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.SerializationException;
 
+@SuppressWarnings("rawtypes")
 public class DefaultJsonConverter implements JsonConverter {
 
 	/*
@@ -74,14 +75,14 @@ public class DefaultJsonConverter implements JsonConverter {
 	}
 
 	@Override
-	public <T> Collection<T> newCollection(
-			final Class<? extends Collection<T>> wantedType) {
-		final Collection<T> result;
+	public Collection<?> newCollection(final Class<Collection> wantedType) {
+		final Collection<?> result;
 
 		if (wantedType.isInterface()
 				|| Modifier.isAbstract(wantedType.getModifiers())) {
 			try {
-				result = chooseMostSuitableCollection(wantedType).newInstance();
+				result = (Collection<?>) chooseMostSuitableCollection(
+						wantedType).newInstance();
 			} catch (InstantiationException | IllegalAccessException e) {
 				throw new SerializationException(e);
 			}
@@ -96,13 +97,14 @@ public class DefaultJsonConverter implements JsonConverter {
 	}
 
 	@Override
-	public <K, V> Map<K, V> newMap(final Class<? extends Map<K, V>> wantedType) {
-		Map<K, V> result = null;
+	public Map<?, ?> newMap(final Class<Map> wantedType) {
+		Map<?, ?> result = null;
 
 		if (wantedType.isInterface()
 				|| Modifier.isAbstract(wantedType.getModifiers())) {
 			try {
-				result = chooseMostSuitableMap(wantedType).newInstance();
+				result = (Map<?, ?>) chooseMostSuitableMap(wantedType)
+						.newInstance();
 			} catch (InstantiationException | IllegalAccessException e) {
 				throw new SerializationException(e);
 			}
@@ -122,8 +124,8 @@ public class DefaultJsonConverter implements JsonConverter {
 		return field == null;
 	}
 
-	private static final Map<Class<?>, Class<?>> MOST_SUITABLE_COLLECTIONS = new HashMap<>();
-	private static final Map<Class<?>, Class<?>> MOST_SUITABLE_MAPS = new HashMap<>();
+	private static final Map<Class, Class> MOST_SUITABLE_COLLECTIONS = new HashMap<>();
+	private static final Map<Class, Class> MOST_SUITABLE_MAPS = new HashMap<>();
 	static {
 		MOST_SUITABLE_COLLECTIONS.put(Collection.class, ArrayList.class);
 		MOST_SUITABLE_COLLECTIONS.put(List.class, ArrayList.class);
@@ -136,28 +138,25 @@ public class DefaultJsonConverter implements JsonConverter {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> Class<T> chooseMostSuitable(
-			final Class<? extends T> wantedType,
-			final Map<Class<?>, Class<?>> candidates) {
-		Class<T> result = (Class<T>) candidates.get(wantedType);
+	private static Class chooseMostSuitable(final Class wantedType,
+			final Map<Class, Class> candidates) {
+		Class result = candidates.get(wantedType);
 		if (result == null) {
-			for (final Map.Entry<Class<?>, Class<?>> candidate : candidates
+			for (final Map.Entry<Class, Class> candidate : candidates
 					.entrySet()) {
 				if (wantedType.isAssignableFrom(candidate.getKey())) {
-					result = (Class<T>) candidate.getValue();
+					result = candidate.getValue();
 				}
 			}
 		}
 		return result;
 	}
 
-	private static <T> Class<? extends Collection<T>> chooseMostSuitableCollection(
-			final Class<? extends Collection<T>> wantedType) {
+	private static Class chooseMostSuitableCollection(final Class wantedType) {
 		return chooseMostSuitable(wantedType, MOST_SUITABLE_COLLECTIONS);
 	}
 
-	private static <K, V> Class<? extends Map<K, V>> chooseMostSuitableMap(
-			final Class<? extends Map<K, V>> wantedType) {
+	private static Class chooseMostSuitableMap(final Class wantedType) {
 		return chooseMostSuitable(wantedType, MOST_SUITABLE_MAPS);
 	}
 
