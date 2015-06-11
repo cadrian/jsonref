@@ -19,7 +19,9 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.cadrian.jsonref.JsonAtomicValues;
 import net.cadrian.jsonref.SerializationData;
@@ -52,12 +54,15 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter, final Class<? extends T> clazz) {
+			final JsonAtomicValues converter,
+			final Class<? extends T> propertyType) {
 		final T result;
-		if (clazz.isArray()) {
-			result = fromJsonArray(heap, converter, clazz);
-		} else if (Collection.class.isAssignableFrom(clazz)) {
-			result = fromJsonCollection(heap, converter, clazz);
+		if (propertyType.isArray()) {
+			result = fromJsonArray(heap, converter, propertyType);
+		} else if (Collection.class.isAssignableFrom(propertyType)) {
+			result = fromJsonCollection(heap, converter, propertyType);
+		} else if (Map.class.isAssignableFrom(propertyType)) {
+			result = fromJsonMap(heap, converter, propertyType);
 		} else {
 			throw new SerializationException("not array compatible");
 		}
@@ -66,41 +71,98 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonArray(final SerializationHeap heap,
-			final JsonAtomicValues converter, final Class<? extends T> clazz) {
-		assert clazz.isArray() : "not an array";
+			final JsonAtomicValues converter,
+			final Class<? extends T> propertyType) {
+		assert propertyType.isArray() : "not an array";
 
-		final Class<?> componentType = clazz.getComponentType();
+		final Class<?> componentType = propertyType.getComponentType();
 		final int n = array.size();
 		final Object result = Array.newInstance(componentType, n);
+		if (heap != null) {
+			heap.setDeser(ref, result);
+		}
+
 		for (int i = 0; i < n; i++) {
 			final AbstractSerializationData data = (AbstractSerializationData) array
 					.get(i);
 			Array.set(result, i, data.fromJson(heap, converter, componentType));
 		}
+
 		return (T) result;
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonCollection(final SerializationHeap heap,
-			final JsonAtomicValues converter, final Class<? extends T> clazz) {
-		assert Collection.class.isAssignableFrom(clazz) : "not a collection";
+			final JsonAtomicValues converter,
+			final Class<? extends T> propertyType) {
+		assert Collection.class.isAssignableFrom(propertyType) : "not a collection";
 
 		final Collection<Object> result;
 
-		if (clazz.isInterface() || Modifier.isAbstract(clazz.getModifiers())) {
-			result = (Collection<Object>) FactoryUtils
-					.instantiateFactory(clazz).create();
+		if (propertyType.isInterface()
+				|| Modifier.isAbstract(propertyType.getModifiers())) {
+			result = (Collection<Object>) FactoryUtils.instantiateFactory(
+					propertyType).create();
 		} else {
 			try {
-				result = (Collection<Object>) clazz.newInstance();
+				result = (Collection<Object>) propertyType.newInstance();
 			} catch (InstantiationException | IllegalAccessException e) {
 				throw new SerializationException(e);
 			}
+		}
+		if (heap != null) {
+			heap.setDeser(ref, result);
 		}
 
 		for (final SerializationData data : array) {
 			result.add(((AbstractSerializationData) data).fromJson(heap,
 					converter, Object.class));
+		}
+
+		return (T) result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T fromJsonMap(final SerializationHeap heap,
+			final JsonAtomicValues converter,
+			final Class<? extends T> propertyType) {
+		assert Collection.class.isAssignableFrom(propertyType) : "not a collection";
+
+		final Map<Object, Object> result;
+
+		if (propertyType.isInterface()
+				|| Modifier.isAbstract(propertyType.getModifiers())) {
+			result = (Map<Object, Object>) FactoryUtils.instantiateFactory(
+					propertyType).create();
+		} else {
+			try {
+				result = (Map<Object, Object>) propertyType.newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new SerializationException(e);
+			}
+		}
+		if (heap != null) {
+			heap.setDeser(ref, result);
+		}
+
+		for (final SerializationData data : array) {
+			final Object entry = ((AbstractSerializationData) data).fromJson(
+					heap, converter, Object.class);
+			if (entry instanceof Collection<?>) {
+				final Collection<Object> entrycoll = (Collection<Object>) entry;
+				if (entrycoll.size() != 2) {
+					throw new SerializationException("Not a map");
+				}
+				final Iterator<Object> it = entrycoll.iterator();
+				result.put(it.next(), it.next());
+			} else if (entry.getClass().isArray()) {
+				if (Array.getLength(entry) != 2) {
+					throw new SerializationException("Not a map");
+				}
+				result.put(Array.get(entry, 0), Array.get(entry, 1));
+			} else {
+				throw new SerializationException("Not a map");
+			}
 		}
 
 		return (T) result;

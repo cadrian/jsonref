@@ -40,9 +40,9 @@ public class DefaultJsonAtomicValues implements JsonAtomicValues {
 	 * java.lang.Class)
 	 */
 	@Override
-	public <T> T fromJson(final String value, final Class<? extends T> type) {
-		assert isAtomicValue(type);
-		return AtomicValue.get(type).fromJson(value, type);
+	public <T> T fromJson(final String value, final Class<? extends T> propertyType) {
+		assert isAtomicValue(propertyType);
+		return AtomicValue.get(propertyType).fromJson(value, propertyType);
 	}
 
 	/*
@@ -51,8 +51,8 @@ public class DefaultJsonAtomicValues implements JsonAtomicValues {
 	 * @see net.cadrian.jsonref.JsonConverter#isValue(java.lang.Class)
 	 */
 	@Override
-	public boolean isAtomicValue(final Class<?> type) {
-		return AtomicValue.get(type) != null;
+	public boolean isAtomicValue(final Class<?> propertyType) {
+		return AtomicValue.get(propertyType) != null;
 	}
 
 }

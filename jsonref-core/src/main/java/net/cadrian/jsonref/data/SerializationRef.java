@@ -34,14 +34,18 @@ public class SerializationRef extends AbstractSerializationData {
 	}
 
 	@Override
-	public void toJson(final StringBuilder result, final JsonAtomicValues converter) {
+	public void toJson(final StringBuilder result,
+			final JsonAtomicValues converter) {
 		result.append('$').append(ref);
 	}
 
 	@Override
-	<T> T fromJson(final SerializationHeap heap, final JsonAtomicValues converter,
-			final Class<? extends T> clazz) {
-		return heap.get(ref).fromJson(heap, converter, clazz);
+	<T> T fromJson(final SerializationHeap heap,
+			final JsonAtomicValues converter,
+			final Class<? extends T> propertyType) {
+		assert heap != null : "no heap for reference?!";
+
+		return heap.get(ref).fromJson(heap, converter, propertyType);
 	}
 
 }

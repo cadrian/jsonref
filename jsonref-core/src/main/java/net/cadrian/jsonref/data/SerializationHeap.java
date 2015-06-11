@@ -68,7 +68,7 @@ public class SerializationHeap extends AbstractSerializationData {
 	@SuppressWarnings("unchecked")
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter, final Class<? extends T> clazz) {
+			final JsonAtomicValues converter, final Class<? extends T> propertyType) {
 		return (T) fromJson(converter);
 	}
 

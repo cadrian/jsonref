@@ -16,9 +16,13 @@
 package net.cadrian.jsonref;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -75,6 +79,61 @@ public class TestSerializationProcessor {
 		final String json = that.serialize(new Object[] { now, string },
 				converter);
 		assertEquals("[now,string]", json);
+	}
+
+	@Test
+	public void testCollection() {
+		final Date now = new Date();
+		final String string = "string";
+		when(converter.isAtomicValue(Date.class)).thenReturn(true);
+		when(converter.isAtomicValue(String.class)).thenReturn(true);
+		when(converter.toJson(now)).thenReturn("now");
+		when(converter.toJson(string)).thenReturn("string");
+		final String json = that.serialize(
+				Arrays.asList(new Object[] { now, string }), converter);
+		assertEquals("[now,string]", json);
+	}
+
+	@Test
+	public void testMapOfStrings() {
+		final Date now = new Date();
+		final String string = "string";
+		final String k1 = "foo";
+		final String k2 = "bar";
+		when(converter.isAtomicValue(Date.class)).thenReturn(true);
+		when(converter.isAtomicValue(String.class)).thenReturn(true);
+		when(converter.toJson(now)).thenReturn("now");
+		when(converter.toJson(string)).thenReturn("string");
+		when(converter.toJson(k1)).thenReturn("1");
+		when(converter.toJson(k2)).thenReturn("2");
+		final Map<Object, Object> map = new HashMap<>();
+		map.put(k1, now);
+		map.put(k2, string);
+		final String json = that.serialize(map, converter);
+		assertTrue(json.equals("{1:now,2:string}")
+				|| json.equals("{2:string,1:now}"));
+	}
+
+	@Test
+	public void testMapOfObjects() {
+		final Date now = new Date();
+		final String string = "string";
+		final int k1 = 1;
+		final float k2 = 2;
+		when(converter.isAtomicValue(Date.class)).thenReturn(true);
+		when(converter.isAtomicValue(String.class)).thenReturn(true);
+		when(converter.isAtomicValue(Integer.class)).thenReturn(true);
+		when(converter.isAtomicValue(Float.class)).thenReturn(true);
+		when(converter.toJson(now)).thenReturn("now");
+		when(converter.toJson(string)).thenReturn("string");
+		when(converter.toJson(k1)).thenReturn("1");
+		when(converter.toJson(k2)).thenReturn("2");
+		final Map<Object, Object> map = new HashMap<>();
+		map.put(k1, now);
+		map.put(k2, string);
+		final String json = that.serialize(map, converter);
+		assertTrue(json.equals("[[1,now],[2,string]]")
+				|| json.equals("[[2,string],[1,now]]"));
 	}
 
 }

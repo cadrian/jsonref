@@ -18,6 +18,8 @@ package net.cadrian.jsonref;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.cadrian.jsonref.data.AbstractSerializationObject;
+import net.cadrian.jsonref.data.SerializationArray;
 import net.cadrian.jsonref.data.SerializationHeap;
 import net.cadrian.jsonref.data.SerializationObject;
 import net.cadrian.jsonref.data.SerializationRef;
@@ -83,7 +85,8 @@ class DeserializationProcessor {
 	 *            the Javers converter
 	 * @return the Java object
 	 */
-	public Object deserialize(final String jsonR, final JsonAtomicValues converter) {
+	public Object deserialize(final String jsonR,
+			final JsonAtomicValues converter) {
 		final DeserializationContext context = new DeserializationContext(jsonR);
 		final SerializationData data = parse(context, converter);
 		return data.fromJson(converter);
@@ -136,13 +139,14 @@ class DeserializationProcessor {
 				'<', '>', converter);
 		final SerializationHeap result = new SerializationHeap();
 		for (final SerializationData data : dataList) {
-			result.add((SerializationObject) data);
+			result.add((AbstractSerializationObject) data);
 		}
 		return result;
 	}
 
 	private SerializationObject parseObject(
-			final DeserializationContext context, final JsonAtomicValues converter) {
+			final DeserializationContext context,
+			final JsonAtomicValues converter) {
 		assert context.isValid() && context.get() == '{' : "unexpected character";
 
 		final SerializationObject result = new SerializationObject(null,
@@ -209,11 +213,16 @@ class DeserializationProcessor {
 		return result;
 	}
 
-	private SerializationValue parseArray(final DeserializationContext context,
+	private SerializationArray parseArray(final DeserializationContext context,
 			final JsonAtomicValues converter) {
 		final List<SerializationData> dataList = parseDataList(context,
 				"array", '[', ']', converter);
-		return new SerializationValue(null, dataList);
+		final SerializationArray result = new SerializationArray(
+				dataList.size(), null, context.getRef());
+		for (final SerializationData data : dataList) {
+			result.add(data);
+		}
+		return result;
 	}
 
 	private List<SerializationData> parseDataList(

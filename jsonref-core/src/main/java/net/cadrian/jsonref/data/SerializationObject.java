@@ -21,12 +21,15 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
 import net.cadrian.jsonref.JsonAtomicValues;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
+
+import org.apache.commons.collections4.FactoryUtils;
 
 public class SerializationObject extends AbstractSerializationObject {
 	private final Map<String, SerializationData> properties = new HashMap<>();
@@ -81,46 +84,89 @@ public class SerializationObject extends AbstractSerializationObject {
 	@SuppressWarnings("unchecked")
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter, final Class<? extends T> clazz) {
+			final JsonAtomicValues converter,
+			final Class<? extends T> propertyType) {
 		Object result = null;
 		if (heap != null) {
 			result = heap.getDeser(ref);
 		}
 		if (result == null) {
-			try {
-				final Class<?> actualType = Class
-						.forName(((AbstractSerializationData) properties
-								.get("class")).fromJson(heap, converter,
-								String.class));
-				result = actualType.newInstance();
-				if (heap != null) {
-					heap.setDeser(ref, result);
-				}
-
-				final BeanInfo beanInfo = Introspector.getBeanInfo(actualType);
-				final PropertyDescriptor[] pds = beanInfo
-						.getPropertyDescriptors();
-
-				for (final PropertyDescriptor pd : pds) {
-					final String propertyName = pd.getName();
-					if (properties.containsKey(propertyName)) {
-						final Method writer = pd.getWriteMethod();
-						if (writer != null) {
-							writer.invoke(result,
-									((AbstractSerializationData) properties
-											.get(propertyName)).fromJson(heap,
-											converter, pd.getPropertyType()));
-						}
-					}
-				}
-
-			} catch (final ClassNotFoundException | InstantiationException
-					| IllegalAccessException | IntrospectionException
-					| IllegalArgumentException | InvocationTargetException e) {
-				throw new SerializationException(e);
+			if (Map.class.isAssignableFrom(propertyType)) {
+				result = fromJsonMap(heap, converter, propertyType);
+			} else {
+				result = fromJsonObject(heap, converter, result);
 			}
 		}
 		return (T) result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> T fromJsonMap(final SerializationHeap heap,
+			final JsonAtomicValues converter,
+			final Class<? extends T> propertyType) {
+		assert Map.class.isAssignableFrom(propertyType) : "not a map";
+
+		final Map<Object, Object> result;
+
+		if (propertyType.isInterface()
+				|| Modifier.isAbstract(propertyType.getModifiers())) {
+			result = (Map<Object, Object>) FactoryUtils.instantiateFactory(
+					propertyType).create();
+		} else {
+			try {
+				result = (Map<Object, Object>) propertyType.newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new SerializationException(e);
+			}
+		}
+		if (heap != null) {
+			heap.setDeser(ref, result);
+		}
+
+		for (final Map.Entry<String, SerializationData> entry : properties
+				.entrySet()) {
+			final String key = entry.getKey();
+			final Object value = ((AbstractSerializationData) entry.getValue())
+					.fromJson(heap, converter, Object.class);
+			result.put(key, value);
+		}
+		return (T) result;
+	}
+
+	private Object fromJsonObject(final SerializationHeap heap,
+			final JsonAtomicValues converter, Object result) {
+		try {
+			final Class<?> actualType = Class
+					.forName(((AbstractSerializationData) properties
+							.get("class")).fromJson(heap, converter,
+									String.class));
+			result = actualType.newInstance();
+			if (heap != null) {
+				heap.setDeser(ref, result);
+			}
+
+			final BeanInfo beanInfo = Introspector.getBeanInfo(actualType);
+			final PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+
+			for (final PropertyDescriptor pd : pds) {
+				final String propertyName = pd.getName();
+				if (properties.containsKey(propertyName)) {
+					final Method writer = pd.getWriteMethod();
+					if (writer != null) {
+						writer.invoke(result,
+								((AbstractSerializationData) properties
+										.get(propertyName)).fromJson(heap,
+												converter, pd.getPropertyType()));
+					}
+				}
+			}
+
+		} catch (final ClassNotFoundException | InstantiationException
+				| IllegalAccessException | IntrospectionException
+				| IllegalArgumentException | InvocationTargetException e) {
+			throw new SerializationException(e);
+		}
+		return result;
 	}
 
 }

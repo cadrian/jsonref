@@ -34,20 +34,20 @@ public interface JsonAtomicValues {
 	 *
 	 * @param string
 	 *            the JSON string
-	 * @param clazz
+	 * @param propertyType
 	 *            the expected class
 	 * @return the object
 	 */
-	<T> T fromJson(String string, Class<? extends T> clazz);
+	<T> T fromJson(String string, Class<? extends T> propertyType);
 
 	/**
 	 * Is the type an atomic value?
 	 *
-	 * @param type
+	 * @param propertyType
 	 *            the type to check
 	 * @return <code>true</code> if the type is an atomic value,
 	 *         <code>false</code> otherwise
 	 */
-	boolean isAtomicValue(Class<?> type);
+	boolean isAtomicValue(Class<?> propertyType);
 
 }

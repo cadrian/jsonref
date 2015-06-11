@@ -56,8 +56,8 @@ public class SerializationValue extends AbstractSerializationData {
 
 	@Override
 	<T> T fromJson(final SerializationHeap heap, final JsonAtomicValues converter,
-			final Class<? extends T> clazz) {
-		return converter.fromJson((String) value, clazz);
+			final Class<? extends T> propertyType) {
+		return converter.fromJson((String) value, propertyType);
 	}
 
 }

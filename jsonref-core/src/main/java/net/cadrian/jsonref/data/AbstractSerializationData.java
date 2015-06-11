@@ -25,5 +25,5 @@ abstract class AbstractSerializationData implements SerializationData {
 	}
 
 	abstract <T> T fromJson(SerializationHeap heap, JsonAtomicValues converter,
-			Class<? extends T> clazz);
+			Class<? extends T> propertyType);
 }

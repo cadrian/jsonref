@@ -28,6 +28,7 @@ import java.util.Map;
 
 import net.cadrian.jsonref.data.SerializationArray;
 import net.cadrian.jsonref.data.SerializationHeap;
+import net.cadrian.jsonref.data.SerializationMap;
 import net.cadrian.jsonref.data.SerializationObject;
 import net.cadrian.jsonref.data.SerializationRef;
 import net.cadrian.jsonref.data.SerializationValue;
@@ -155,7 +156,8 @@ class SerializationProcessor {
 					new ObjectReference(value, heap.nextRef()), returnType,
 					heap, refs, converter);
 		} else if (Map.class.isAssignableFrom(returnType)) {
-			result = null;// TODO
+			result = serializeMap(new ObjectReference(value, heap.nextRef()),
+					returnType, heap, refs, converter);
 		} else {
 			final int objectId = serializeObject(new ObjectReference(value,
 					heap.nextRef()), heap, refs, converter);
@@ -197,6 +199,27 @@ class SerializationProcessor {
 
 		for (final Object object : array) {
 			result.add(getData(heap, refs, object, Object.class, converter));
+		}
+		return result;
+	}
+
+	private SerializationMap serializeMap(final ObjectReference ref,
+			final Class<?> returnType, final SerializationHeap heap,
+			final Map<ObjectReference, ObjectReference> refs,
+			final JsonAtomicValues converter) {
+
+		@SuppressWarnings("unchecked")
+		final Map<Object, Object> map = (Map<Object, Object>) ref.getObject();
+		final SerializationMap result = new SerializationMap(map.size(),
+				returnType, ref.getId());
+		heap.add(result);
+		refs.put(ref, ref);
+
+		for (final Map.Entry<Object, Object> entry : map.entrySet()) {
+			final Object key = entry.getKey();
+			final Object value = entry.getValue();
+			result.add(getData(heap, refs, key, Object.class, converter),
+					getData(heap, refs, value, Object.class, converter));
 		}
 		return result;
 	}
