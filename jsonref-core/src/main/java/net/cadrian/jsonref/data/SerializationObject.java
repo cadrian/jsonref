@@ -21,7 +21,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import net.cadrian.jsonref.JsonConverter;
@@ -29,7 +29,7 @@ import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
 public class SerializationObject extends AbstractSerializationObject {
-	private final Map<String, AbstractSerializationData> properties = new HashMap<>();
+	private final Map<String, AbstractSerializationData> properties = new LinkedHashMap<>();
 
 	public SerializationObject(final Class<?> type, final int ref) {
 		super(type, ref);

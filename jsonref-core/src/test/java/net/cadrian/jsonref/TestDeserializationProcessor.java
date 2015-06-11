@@ -114,7 +114,7 @@ public class TestDeserializationProcessor {
 		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
 		when(
 				converter
-				.newCollection((Class<? extends Collection<Object>>) Collection.class))
+						.newCollection((Class<? extends Collection<Object>>) Collection.class))
 				.thenReturn(new ArrayList<Object>());
 
 		final Collection<?> objects = that.deserialize(
@@ -133,7 +133,7 @@ public class TestDeserializationProcessor {
 		final String string2 = "bar";
 		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
 		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
-		.thenReturn(new HashMap<Object, Object>());
+				.thenReturn(new HashMap<Object, Object>());
 
 		final Map<?, ?> objects = that.deserialize(
 				"[[\"string1\",\"string2\"],[\"string2\",\"string1\"]]",
@@ -155,7 +155,7 @@ public class TestDeserializationProcessor {
 				string2);
 		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
 		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
-		.thenReturn(new HashMap<Object, Object>());
+				.thenReturn(new HashMap<Object, Object>());
 
 		final Map<?, ?> objects = that.deserialize(
 				"{\"string1\":\"string2\",\"string2\":\"string1\"}", converter,
@@ -177,7 +177,7 @@ public class TestDeserializationProcessor {
 		final Integer dontPanic = Integer.valueOf(42);
 		when(converter.fromJson("2", null)).thenReturn(dontPanic);
 		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
-		.thenReturn(new HashMap<Object, Object>());
+				.thenReturn(new HashMap<Object, Object>());
 
 		final Map<?, ?> objects = that.deserialize(
 				"[[1,\"string1\"],[2,\"string2\"]]", converter, Map.class);

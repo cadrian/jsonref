@@ -20,6 +20,7 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -239,21 +240,25 @@ class SerializationProcessor {
 		heap.add(result);
 		refs.put(ref, ref);
 
+		result.add("class", getData(heap, refs, type, Class.class, converter));
 		try {
 			final BeanInfo beanInfo = Introspector.getBeanInfo(type);
 			final PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
 
 			for (final PropertyDescriptor pd : pds) {
-				final Method reader = pd.getReadMethod();
-				if (reader != null) {
-					final SerializationData data;
+				if (!converter.isTransient(getField(type, pd.getName()))) {
+					final Method reader = pd.getReadMethod();
+					if (reader != null) {
+						final SerializationData data;
 
-					final Object value = reader.invoke(object);
-					final Class<?> propertyType = reader.getReturnType();
-					data = getData(heap, refs, value, propertyType, converter);
+						final Object value = reader.invoke(object);
+						final Class<?> propertyType = reader.getReturnType();
+						data = getData(heap, refs, value, propertyType,
+								converter);
 
-					if (data != null) {
-						result.add(pd.getName(), data);
+						if (data != null) {
+							result.add(pd.getName(), data);
+						}
 					}
 				}
 			}
@@ -263,6 +268,21 @@ class SerializationProcessor {
 		}
 
 		return result.getRef();
+	}
+
+	private Field getField(Class<?> type, final String name) {
+		do {
+			try {
+				return type.getDeclaredField(name);
+			} catch (final NoSuchFieldException e) {
+				type = type.getSuperclass();
+			} catch (final SecurityException e) {
+				throw new SerializationException(
+						"Security error while looking for field "
+								+ type.getName() + "." + name, e);
+			}
+		} while (type != Object.class);
+		return null;
 	}
 
 }

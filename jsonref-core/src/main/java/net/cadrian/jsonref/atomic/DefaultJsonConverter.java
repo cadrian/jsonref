@@ -15,6 +15,7 @@
  */
 package net.cadrian.jsonref.atomic;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -113,6 +114,12 @@ public class DefaultJsonConverter implements JsonConverter {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public boolean isTransient(final Field field) {
+		// By default, all the actual fields are serialized
+		return field == null;
 	}
 
 	private static final Map<Class<?>, Class<?>> MOST_SUITABLE_COLLECTIONS = new HashMap<>();

@@ -15,6 +15,7 @@
  */
 package net.cadrian.jsonref;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
 
@@ -68,5 +69,13 @@ public interface JsonConverter {
 	 * @return
 	 */
 	<K, V> Map<K, V> newMap(Class<? extends Map<K, V>> wantedType);
+
+	/**
+	 * Transient fields are not serialized.
+	 *
+	 * @param field
+	 * @return
+	 */
+	boolean isTransient(Field field);
 
 }
