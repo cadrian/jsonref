@@ -122,18 +122,18 @@ class SerializationProcessor {
 
 	private SerializationData getData(final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final Object value, final Class<?> returnType,
+			final Object value, final Class<?> propertyType,
 			final JsonAtomicValues converter) {
 		final SerializationData data;
 		if (value == null) {
-			data = new SerializationValue(returnType, null);
+			data = new SerializationValue(propertyType, null);
 		} else if (converter.isAtomicValue(value.getClass())) {
 			data = new SerializationValue(value.getClass(), value);
-		} else if (returnType == Class.class) {
-			data = new SerializationValue(returnType,
+		} else if (propertyType == Class.class) {
+			data = new SerializationValue(propertyType,
 					((Class<?>) value).getName());
 		} else if (heap != null) {
-			data = getHeapData(value, returnType, heap, refs, converter);
+			data = getHeapData(value, propertyType, heap, refs, converter);
 		} else {
 			data = null;
 		}
@@ -141,23 +141,23 @@ class SerializationProcessor {
 	}
 
 	private SerializationData getHeapData(final Object value,
-			final Class<?> returnType, final SerializationHeap heap,
+			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
 			final JsonAtomicValues converter) {
 		final SerializationData result;
 		final ObjectReference ref = refs.get(new ObjectReference(value, 0));
 		if (ref != null) {
 			result = new SerializationRef(ref.getId());
-		} else if (returnType.isArray()) {
+		} else if (propertyType.isArray()) {
 			result = serializeArray(new ObjectReference(value, heap.nextRef()),
-					returnType, heap, refs, converter);
-		} else if (Collection.class.isAssignableFrom(returnType)) {
+					propertyType, heap, refs, converter);
+		} else if (Collection.class.isAssignableFrom(propertyType)) {
 			result = serializeCollection(
-					new ObjectReference(value, heap.nextRef()), returnType,
+					new ObjectReference(value, heap.nextRef()), propertyType,
 					heap, refs, converter);
-		} else if (Map.class.isAssignableFrom(returnType)) {
+		} else if (Map.class.isAssignableFrom(propertyType)) {
 			result = serializeMap(new ObjectReference(value, heap.nextRef()),
-					returnType, heap, refs, converter);
+					propertyType, heap, refs, converter);
 		} else {
 			final int objectId = serializeObject(new ObjectReference(value,
 					heap.nextRef()), heap, refs, converter);
@@ -167,14 +167,14 @@ class SerializationProcessor {
 	}
 
 	private SerializationArray serializeArray(final ObjectReference ref,
-			final Class<?> returnType, final SerializationHeap heap,
+			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
 			final JsonAtomicValues converter) {
 		final Object array = ref.getObject();
 		final int n = Array.getLength(array);
-		final Class<?> componentType = returnType.getComponentType();
-		final SerializationArray result = new SerializationArray(n, returnType,
-				ref.getId());
+		final Class<?> componentType = propertyType.getComponentType();
+		final SerializationArray result = new SerializationArray(n,
+				propertyType, ref.getId());
 		heap.add(result);
 		refs.put(ref, ref);
 
@@ -186,14 +186,14 @@ class SerializationProcessor {
 	}
 
 	private SerializationArray serializeCollection(final ObjectReference ref,
-			final Class<?> returnType, final SerializationHeap heap,
+			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
 			final JsonAtomicValues converter) {
 
 		@SuppressWarnings("unchecked")
 		final Collection<Object> array = (Collection<Object>) ref.getObject();
 		final SerializationArray result = new SerializationArray(array.size(),
-				returnType, ref.getId());
+				propertyType, ref.getId());
 		heap.add(result);
 		refs.put(ref, ref);
 
@@ -204,14 +204,14 @@ class SerializationProcessor {
 	}
 
 	private SerializationMap serializeMap(final ObjectReference ref,
-			final Class<?> returnType, final SerializationHeap heap,
+			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
 			final JsonAtomicValues converter) {
 
 		@SuppressWarnings("unchecked")
 		final Map<Object, Object> map = (Map<Object, Object>) ref.getObject();
 		final SerializationMap result = new SerializationMap(map.size(),
-				returnType, ref.getId());
+				propertyType, ref.getId());
 		heap.add(result);
 		refs.put(ref, ref);
 
@@ -249,8 +249,8 @@ class SerializationProcessor {
 					final SerializationData data;
 
 					final Object value = reader.invoke(object);
-					final Class<?> returnType = reader.getReturnType();
-					data = getData(heap, refs, value, returnType, converter);
+					final Class<?> propertyType = reader.getReturnType();
+					data = getData(heap, refs, value, propertyType, converter);
 
 					if (data != null) {
 						result.add(pd.getName(), data);

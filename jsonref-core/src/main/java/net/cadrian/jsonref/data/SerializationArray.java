@@ -116,7 +116,7 @@ public class SerializationArray extends AbstractSerializationObject {
 
 		for (final SerializationData data : array) {
 			result.add(((AbstractSerializationData) data).fromJson(heap,
-					converter, Object.class));
+					converter, null));
 		}
 
 		return (T) result;
@@ -147,7 +147,7 @@ public class SerializationArray extends AbstractSerializationObject {
 
 		for (final SerializationData data : array) {
 			final Object entry = ((AbstractSerializationData) data).fromJson(
-					heap, converter, Object.class);
+					heap, converter, null);
 			if (entry instanceof Collection<?>) {
 				final Collection<Object> entrycoll = (Collection<Object>) entry;
 				if (entrycoll.size() != 2) {

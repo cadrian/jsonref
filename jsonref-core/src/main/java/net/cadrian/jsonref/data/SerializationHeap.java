@@ -62,13 +62,14 @@ public class SerializationHeap extends AbstractSerializationData {
 
 	@Override
 	public Object fromJson(final JsonAtomicValues converter) {
-		return heap.get(0).fromJson(this, converter, Object.class);
+		return heap.get(0).fromJson(this, converter, null);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter, final Class<? extends T> propertyType) {
+			final JsonAtomicValues converter,
+			final Class<? extends T> propertyType) {
 		return (T) fromJson(converter);
 	}
 

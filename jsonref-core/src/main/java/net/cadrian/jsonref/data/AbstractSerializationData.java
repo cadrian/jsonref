@@ -21,7 +21,7 @@ import net.cadrian.jsonref.SerializationData;
 abstract class AbstractSerializationData implements SerializationData {
 	@Override
 	public Object fromJson(final JsonAtomicValues converter) {
-		return fromJson(null, converter, Object.class);
+		return fromJson(null, converter, null);
 	}
 
 	abstract <T> T fromJson(SerializationHeap heap, JsonAtomicValues converter,

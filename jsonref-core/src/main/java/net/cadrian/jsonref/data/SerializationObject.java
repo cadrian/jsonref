@@ -127,7 +127,7 @@ public class SerializationObject extends AbstractSerializationObject {
 				.entrySet()) {
 			final String key = entry.getKey();
 			final Object value = ((AbstractSerializationData) entry.getValue())
-					.fromJson(heap, converter, Object.class);
+					.fromJson(heap, converter, null);
 			result.put(key, value);
 		}
 		return (T) result;
@@ -139,7 +139,7 @@ public class SerializationObject extends AbstractSerializationObject {
 			final Class<?> actualType = Class
 					.forName(((AbstractSerializationData) properties
 							.get("class")).fromJson(heap, converter,
-									String.class));
+							String.class));
 			result = actualType.newInstance();
 			if (heap != null) {
 				heap.setDeser(ref, result);
@@ -156,7 +156,7 @@ public class SerializationObject extends AbstractSerializationObject {
 						writer.invoke(result,
 								((AbstractSerializationData) properties
 										.get(propertyName)).fromJson(heap,
-												converter, pd.getPropertyType()));
+										converter, pd.getPropertyType()));
 					}
 				}
 			}
