@@ -127,7 +127,7 @@ public class TestDeserializationProcessor {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void testMapOfStrings() {
+	public void testMapOfStringsInJsonArray() {
 		final String string1 = "foo";
 		when(converter.fromJson("\"string1\"", null)).thenReturn(string1);
 		final String string2 = "bar";
@@ -144,8 +144,46 @@ public class TestDeserializationProcessor {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
+	public void testMapOfStringsInJsonObject() {
+		final String string1 = "foo";
+		when(converter.fromJson("\"string1\"", String.class)).thenReturn(
+				string1);
+		when(converter.fromJson("\"string1\"", null)).thenReturn(string1);
+		final String string2 = "bar";
+		when(converter.fromJson("\"string2\"", String.class)).thenReturn(
+				string2);
+		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
+		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
+		.thenReturn(new HashMap<Object, Object>());
+
+		final Map<?, ?> objects = that.deserialize(
+				"{\"string1\":\"string2\",\"string2\":\"string1\"}", converter,
+				Map.class);
+		assertEquals(2, objects.size());
+		assertEquals(string1, objects.get(string2));
+		assertEquals(string2, objects.get(string1));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
 	public void testMapOfObjects() {
-		// TODO
+		final String string1 = "foo";
+		when(converter.fromJson("\"string1\"", null)).thenReturn(string1);
+		final String string2 = "bar";
+		when(converter.fromJson("\"string2\"", null)).thenReturn(string2);
+		final Date now = new Date();
+		when(converter.fromJson("1", null)).thenReturn(now);
+		final Integer dontPanic = Integer.valueOf(42);
+		when(converter.fromJson("2", null)).thenReturn(dontPanic);
+		when(converter.newMap((Class<? extends Map<Object, Object>>) Map.class))
+		.thenReturn(new HashMap<Object, Object>());
+
+		final Map<?, ?> objects = that.deserialize(
+				"[[1,\"string1\"],[2,\"string2\"]]", converter, Map.class);
+		assertEquals(2, objects.size());
+		assertEquals(string1, objects.get(now));
+		assertEquals(string2, objects.get(dontPanic));
 	}
 
 }
