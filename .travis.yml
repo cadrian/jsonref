@@ -3,10 +3,10 @@ language: java
 sudo: false
 
 jdk:
-  - oraclejdk8
-  - oraclejdk7
   - openjdk7
+  - oraclejdk7
+  - oraclejdk8
 
-#env:
-#  global:
-#    - JAVA_OPTS="-ea"
+env:
+  global:
+    - JAVA_OPTS="-ea"
