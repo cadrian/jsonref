@@ -100,7 +100,7 @@ class SerializationProcessor {
 	 *            the Javers converter
 	 * @return the serialized object
 	 */
-	public String serialize(final Object value, final JsonAtomicValues converter) {
+	public String serialize(final Object value, final JsonConverter converter) {
 		if (value == null) {
 			return "null";
 		}
@@ -123,7 +123,7 @@ class SerializationProcessor {
 	private SerializationData getData(final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
 			final Object value, final Class<?> propertyType,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		final SerializationData data;
 		if (value == null) {
 			data = new SerializationValue(propertyType, null);
@@ -143,7 +143,7 @@ class SerializationProcessor {
 	private SerializationData getHeapData(final Object value,
 			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		final SerializationData result;
 		final ObjectReference ref = refs.get(new ObjectReference(value, 0));
 		if (ref != null) {
@@ -169,7 +169,7 @@ class SerializationProcessor {
 	private SerializationArray serializeArray(final ObjectReference ref,
 			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		final Object array = ref.getObject();
 		final int n = Array.getLength(array);
 		final Class<?> componentType = propertyType.getComponentType();
@@ -188,7 +188,7 @@ class SerializationProcessor {
 	private SerializationArray serializeCollection(final ObjectReference ref,
 			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 
 		@SuppressWarnings("unchecked")
 		final Collection<Object> array = (Collection<Object>) ref.getObject();
@@ -206,7 +206,7 @@ class SerializationProcessor {
 	private SerializationMap serializeMap(final ObjectReference ref,
 			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 
 		@SuppressWarnings("unchecked")
 		final Map<Object, Object> map = (Map<Object, Object>) ref.getObject();
@@ -227,7 +227,7 @@ class SerializationProcessor {
 	private int serializeObject(final ObjectReference ref,
 			final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		assert ref.getObject() != null : "null object?!";
 		assert !refs.containsKey(ref) : "duplicated ref " + ref.getId();
 

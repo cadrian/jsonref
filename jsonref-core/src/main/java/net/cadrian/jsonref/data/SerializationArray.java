@@ -16,18 +16,15 @@
 package net.cadrian.jsonref.data;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.cadrian.jsonref.JsonAtomicValues;
+import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
-
-import org.apache.commons.collections4.FactoryUtils;
 
 public class SerializationArray extends AbstractSerializationObject {
 
@@ -40,8 +37,7 @@ public class SerializationArray extends AbstractSerializationObject {
 	}
 
 	@Override
-	public void toJson(final StringBuilder result,
-			final JsonAtomicValues converter) {
+	public void toJson(final StringBuilder result, final JsonConverter converter) {
 		result.append('[');
 		String sep = "";
 		for (final SerializationData data : array) {
@@ -54,15 +50,14 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
+			final Class<? extends T> propertyType, final JsonConverter converter) {
 		final T result;
 		if (propertyType.isArray()) {
-			result = fromJsonArray(heap, converter, propertyType);
+			result = fromJsonArray(heap, propertyType, converter);
 		} else if (Collection.class.isAssignableFrom(propertyType)) {
-			result = fromJsonCollection(heap, converter, propertyType);
+			result = fromJsonCollection(heap, propertyType, converter);
 		} else if (Map.class.isAssignableFrom(propertyType)) {
-			result = fromJsonMap(heap, converter, propertyType);
+			result = fromJsonMap(heap, propertyType, converter);
 		} else {
 			throw new SerializationException("not array compatible");
 		}
@@ -71,8 +66,7 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonArray(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
+			final Class<? extends T> propertyType, final JsonConverter converter) {
 		assert propertyType.isArray() : "not an array";
 
 		final Class<?> componentType = propertyType.getComponentType();
@@ -85,7 +79,7 @@ public class SerializationArray extends AbstractSerializationObject {
 		for (int i = 0; i < n; i++) {
 			final AbstractSerializationData data = (AbstractSerializationData) array
 					.get(i);
-			Array.set(result, i, data.fromJson(heap, converter, componentType));
+			Array.set(result, i, data.fromJson(heap, componentType, converter));
 		}
 
 		return (T) result;
@@ -93,30 +87,18 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonCollection(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
+			final Class<? extends T> propertyType, final JsonConverter converter) {
 		assert Collection.class.isAssignableFrom(propertyType) : "not a collection";
 
-		final Collection<Object> result;
-
-		if (propertyType.isInterface()
-				|| Modifier.isAbstract(propertyType.getModifiers())) {
-			result = (Collection<Object>) FactoryUtils.instantiateFactory(
-					propertyType).create();
-		} else {
-			try {
-				result = (Collection<Object>) propertyType.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw new SerializationException(e);
-			}
-		}
+		final Collection<Object> result = converter
+				.newCollection((Class<? extends Collection<Object>>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}
 
 		for (final SerializationData data : array) {
-			result.add(((AbstractSerializationData) data).fromJson(heap,
-					converter, null));
+			result.add(((AbstractSerializationData) data).fromJson(heap, null,
+					converter));
 		}
 
 		return (T) result;
@@ -124,30 +106,18 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonMap(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
+			final Class<? extends T> propertyType, final JsonConverter converter) {
 		assert Collection.class.isAssignableFrom(propertyType) : "not a collection";
 
-		final Map<Object, Object> result;
-
-		if (propertyType.isInterface()
-				|| Modifier.isAbstract(propertyType.getModifiers())) {
-			result = (Map<Object, Object>) FactoryUtils.instantiateFactory(
-					propertyType).create();
-		} else {
-			try {
-				result = (Map<Object, Object>) propertyType.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw new SerializationException(e);
-			}
-		}
+		final Map<Object, Object> result = converter
+				.newMap((Class<? extends Map<Object, Object>>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}
 
 		for (final SerializationData data : array) {
 			final Object entry = ((AbstractSerializationData) data).fromJson(
-					heap, converter, null);
+					heap, null, converter);
 			if (entry instanceof Collection<?>) {
 				final Collection<Object> entrycoll = (Collection<Object>) entry;
 				if (entrycoll.size() != 2) {

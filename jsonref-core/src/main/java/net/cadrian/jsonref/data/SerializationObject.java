@@ -21,30 +21,18 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.cadrian.jsonref.JsonAtomicValues;
+import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
-import org.apache.commons.collections4.FactoryUtils;
-
 public class SerializationObject extends AbstractSerializationObject {
-	private final Map<String, SerializationData> properties = new HashMap<>();
+	private final Map<String, AbstractSerializationData> properties = new HashMap<>();
 
 	public SerializationObject(final Class<?> type, final int ref) {
 		super(type, ref);
-	}
-
-	/**
-	 * Getter values
-	 *
-	 * @return the values
-	 */
-	public Map<String, SerializationData> getProperties() {
-		return properties;
 	}
 
 	/**
@@ -54,7 +42,7 @@ public class SerializationObject extends AbstractSerializationObject {
 	public void add(final String property, final SerializationData value) {
 		assert !contains(property);
 
-		properties.put(property, value);
+		properties.put(property, (AbstractSerializationData) value);
 	}
 
 	/**
@@ -66,11 +54,10 @@ public class SerializationObject extends AbstractSerializationObject {
 	}
 
 	@Override
-	public void toJson(final StringBuilder result,
-			final JsonAtomicValues converter) {
+	public void toJson(final StringBuilder result, final JsonConverter converter) {
 		result.append('{');
 		String sep = "";
-		for (final Map.Entry<String, SerializationData> value : properties
+		for (final Map.Entry<String, AbstractSerializationData> value : properties
 				.entrySet()) {
 			result.append(sep);
 			result.append(converter.toJson(value.getKey()));
@@ -81,66 +68,67 @@ public class SerializationObject extends AbstractSerializationObject {
 		result.append('}');
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
-		Object result = null;
+			final Class<? extends T> propertyType, final JsonConverter converter) {
+		T result = null;
 		if (heap != null) {
-			result = heap.getDeser(ref);
+			@SuppressWarnings("unchecked")
+			final T deser = (T) heap.getDeser(ref);
+			result = deser;
 		}
 		if (result == null) {
-			if (Map.class.isAssignableFrom(propertyType)) {
-				result = fromJsonMap(heap, converter, propertyType);
+			if (propertyType != null
+					&& Map.class.isAssignableFrom(propertyType)) {
+				result = fromJsonMap(heap, propertyType, converter);
 			} else {
-				result = fromJsonObject(heap, converter, result);
+				result = fromJsonObject(heap, propertyType, converter);
 			}
 		}
-		return (T) result;
+		return result;
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonMap(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
+			final Class<? extends T> propertyType, final JsonConverter converter) {
 		assert Map.class.isAssignableFrom(propertyType) : "not a map";
 
 		final Map<Object, Object> result;
 
-		if (propertyType.isInterface()
-				|| Modifier.isAbstract(propertyType.getModifiers())) {
-			result = (Map<Object, Object>) FactoryUtils.instantiateFactory(
-					propertyType).create();
-		} else {
-			try {
-				result = (Map<Object, Object>) propertyType.newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw new SerializationException(e);
-			}
-		}
+		result = converter
+				.newMap((Class<? extends Map<Object, Object>>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}
 
-		for (final Map.Entry<String, SerializationData> entry : properties
+		for (final Map.Entry<String, AbstractSerializationData> entry : properties
 				.entrySet()) {
 			final String key = entry.getKey();
-			final Object value = ((AbstractSerializationData) entry.getValue())
-					.fromJson(heap, converter, null);
+			final Object value = entry.getValue().fromJson(heap, null,
+					converter);
 			result.put(key, value);
 		}
 		return (T) result;
 	}
 
-	private Object fromJsonObject(final SerializationHeap heap,
-			final JsonAtomicValues converter, Object result) {
+	@SuppressWarnings("unchecked")
+	private <T> T fromJsonObject(final SerializationHeap heap,
+			final Class<? extends T> propertyType, final JsonConverter converter) {
+		final T result;
+
 		try {
-			final Class<?> actualType = Class
-					.forName(((AbstractSerializationData) properties
-							.get("class")).fromJson(heap, converter,
-							String.class));
-			result = actualType.newInstance();
+			final Class<?> actualType;
+			if (propertyType != null) {
+				actualType = propertyType;
+			} else {
+				final AbstractSerializationData classProperty = properties
+						.get("class");
+				final String className = classProperty.fromJson(heap,
+						String.class, converter);
+				actualType = Class.forName(className);
+			}
+
+			result = (T) actualType.newInstance();
 			if (heap != null) {
 				heap.setDeser(ref, result);
 			}
@@ -153,19 +141,19 @@ public class SerializationObject extends AbstractSerializationObject {
 				if (properties.containsKey(propertyName)) {
 					final Method writer = pd.getWriteMethod();
 					if (writer != null) {
-						writer.invoke(result,
-								((AbstractSerializationData) properties
-										.get(propertyName)).fromJson(heap,
-										converter, pd.getPropertyType()));
+						writer.invoke(
+								result,
+								properties.get(propertyName).fromJson(heap,
+										pd.getPropertyType(), converter));
 					}
 				}
 			}
-
 		} catch (final ClassNotFoundException | InstantiationException
 				| IllegalAccessException | IntrospectionException
 				| IllegalArgumentException | InvocationTargetException e) {
 			throw new SerializationException(e);
 		}
+
 		return result;
 	}
 

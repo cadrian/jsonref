@@ -15,10 +15,13 @@
  */
 package net.cadrian.jsonref;
 
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * Basic JSON converter, for "atomic" types
  */
-public interface JsonAtomicValues {
+public interface JsonConverter {
 
 	/**
 	 * Convert the value to a valid JSON string
@@ -49,5 +52,21 @@ public interface JsonAtomicValues {
 	 *         <code>false</code> otherwise
 	 */
 	boolean isAtomicValue(Class<?> propertyType);
+
+	/**
+	 * Create a new collection of the most appropriate type.
+	 *
+	 * @param wantedType
+	 * @return
+	 */
+	<T> Collection<T> newCollection(Class<? extends Collection<T>> wantedType);
+
+	/**
+	 * Create a new map of the most appropriate type.
+	 *
+	 * @param wantedType
+	 * @return
+	 */
+	<K, V> Map<K, V> newMap(Class<? extends Map<K, V>> wantedType);
 
 }

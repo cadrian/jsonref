@@ -15,7 +15,7 @@
  */
 package net.cadrian.jsonref;
 
-import net.cadrian.jsonref.atomic.DefaultJsonAtomicValues;
+import net.cadrian.jsonref.atomic.DefaultJsonConverter;
 
 /**
  * JSON/R serialization
@@ -25,7 +25,7 @@ public class JsonSerializer {
 	private static final SerializationProcessor SERIALIZATION_PROCESSOR = new SerializationProcessor();
 	private static final DeserializationProcessor DESERIALIZATION_PROCESSOR = new DeserializationProcessor();
 
-	private final JsonAtomicValues converter;
+	private final JsonConverter converter;
 
 	/**
 	 * Default constructor with default converter
@@ -40,9 +40,9 @@ public class JsonSerializer {
 	 * @param converter
 	 *            the converter
 	 */
-	public JsonSerializer(final JsonAtomicValues converter) {
+	public JsonSerializer(final JsonConverter converter) {
 		if (converter == null) {
-			this.converter = new DefaultJsonAtomicValues();
+			this.converter = new DefaultJsonConverter();
 		} else {
 			this.converter = converter;
 		}
@@ -67,7 +67,22 @@ public class JsonSerializer {
 	 * @return the object
 	 */
 	public Object fromJson(final String jsonR) {
-		return DESERIALIZATION_PROCESSOR.deserialize(jsonR, converter);
+		return DESERIALIZATION_PROCESSOR.deserialize(jsonR, converter, null);
+	}
+
+	/**
+	 * Deserialize from JSON/R to the given type
+	 *
+	 * @param jsonR
+	 *            the JSON/R string
+	 * @param wantedType
+	 *            the wanted type
+	 * @return the object
+	 */
+	public <T> T fromJson(final String jsonR,
+			final Class<? extends T> wantedType) {
+		return DESERIALIZATION_PROCESSOR.deserialize(jsonR, converter,
+				wantedType);
 	}
 
 	/**
@@ -77,9 +92,25 @@ public class JsonSerializer {
 	 *            the object to clone
 	 * @return the cloned object
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T clone(final T object) {
-		return (T) fromJson(toJson(object));
+		@SuppressWarnings("unchecked")
+		final Class<? extends T> wantedType = (Class<? extends T>) object
+				.getClass();
+		return fromJson(toJson(object), wantedType);
+	}
+
+	/**
+	 * Transtype an object using JSON/R
+	 *
+	 * @param object
+	 *            the object to transtype
+	 * @param wantedType
+	 *            the wanted type
+	 * @return the cloned object
+	 */
+	public <T> T transtype(final Object object,
+			final Class<? extends T> wantedType) {
+		return fromJson(toJson(object), wantedType);
 	}
 
 }

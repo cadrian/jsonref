@@ -29,7 +29,7 @@ class DeserializationProcessor {
 
 	private static final char[] CONST_NULL = new char[] { 'n', 'u', 'l', 'l' };
 	private static final char[] CONST_FALSE = new char[] { 'f', 'a', 'l', 's',
-	'e' };
+			'e' };
 	private static final char[] CONST_TRUE = new char[] { 't', 'r', 'u', 'e' };
 
 	private static class DeserializationContext {
@@ -85,15 +85,15 @@ class DeserializationProcessor {
 	 *            the Javers converter
 	 * @return the Java object
 	 */
-	public Object deserialize(final String jsonR,
-			final JsonAtomicValues converter) {
+	public <T> T deserialize(final String jsonR, final JsonConverter converter,
+			final Class<? extends T> wantedType) {
 		final DeserializationContext context = new DeserializationContext(jsonR);
 		final SerializationData data = parse(context, converter);
-		return data.fromJson(converter);
+		return data.fromJson(wantedType, converter);
 	}
 
 	private SerializationData parse(final DeserializationContext context,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		SerializationData result = null;
 		if (context.isValid()) {
 			switch (context.get()) {
@@ -134,7 +134,7 @@ class DeserializationProcessor {
 	}
 
 	private SerializationHeap parseHeap(final DeserializationContext context,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		final List<SerializationData> dataList = parseDataList(context, "heap",
 				'<', '>', converter);
 		final SerializationHeap result = new SerializationHeap();
@@ -145,8 +145,7 @@ class DeserializationProcessor {
 	}
 
 	private SerializationObject parseObject(
-			final DeserializationContext context,
-			final JsonAtomicValues converter) {
+			final DeserializationContext context, final JsonConverter converter) {
 		assert context.isValid() && context.get() == '{' : "unexpected character";
 
 		final SerializationObject result = new SerializationObject(null,
@@ -172,7 +171,7 @@ class DeserializationProcessor {
 				if (result.contains(property)) {
 					throw new ParseException(
 							"invalid object: duplicated property \"" + property
-							+ "\" at " + context.getIndex());
+									+ "\" at " + context.getIndex());
 				}
 				state = 2;
 				break;
@@ -214,7 +213,7 @@ class DeserializationProcessor {
 	}
 
 	private SerializationArray parseArray(final DeserializationContext context,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		final List<SerializationData> dataList = parseDataList(context,
 				"array", '[', ']', converter);
 		final SerializationArray result = new SerializationArray(
@@ -227,7 +226,7 @@ class DeserializationProcessor {
 
 	private List<SerializationData> parseDataList(
 			final DeserializationContext context, final String type,
-			final char open, final char close, final JsonAtomicValues converter) {
+			final char open, final char close, final JsonConverter converter) {
 		assert context.isValid() && context.get() == open : "unexpected character";
 		assert close == ']' || close == '>' : "bad close character";
 
@@ -293,7 +292,7 @@ class DeserializationProcessor {
 	}
 
 	private SerializationValue parseString(final DeserializationContext context) {
-		return new SerializationValue(null, parseString0(context));
+		return new SerializationValue(parseString0(context));
 	}
 
 	private String parseString0(final DeserializationContext context) {
@@ -321,7 +320,7 @@ class DeserializationProcessor {
 				}
 				break;
 			case 2: // escaped character
-				state = 0;
+				state = 1;
 				break;
 			}
 			context.next();
@@ -332,18 +331,18 @@ class DeserializationProcessor {
 	private SerializationValue parseConst(final DeserializationContext context,
 			final char[] string, final String object) {
 		assert string.length > 0 && context.isValid()
-		&& context.get() == string[0] : "unexpected character";
+				&& context.get() == string[0] : "unexpected character";
 
 		for (int i = 0; i < string.length; i++) {
 			if (!context.isValid() || context.get() != string[i]) {
 				throw new ParseException(
 						"invalid const, unexpected character '" + context.get()
-						+ "' instead of '" + string[i] + "' at "
-						+ context.getIndex());
+								+ "' instead of '" + string[i] + "' at "
+								+ context.getIndex());
 			}
 			context.next();
 		}
-		return new SerializationValue(null, object);
+		return new SerializationValue(object);
 	}
 
 	private SerializationValue parseNumber(final DeserializationContext context) {
@@ -373,7 +372,7 @@ class DeserializationProcessor {
 				context.next();
 			} while (context.isValid() && Character.isDigit(context.get()));
 		}
-		return new SerializationValue(null, value.toString());
+		return new SerializationValue(value.toString());
 	}
 
 }

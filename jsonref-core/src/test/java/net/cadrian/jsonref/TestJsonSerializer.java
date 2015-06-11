@@ -22,7 +22,7 @@ import java.sql.Timestamp;
 import org.junit.Test;
 
 public class TestJsonSerializer {
-	
+
 	@Test
 	public void testCycle() {
 		final JsonSerializer ser = new JsonSerializer();

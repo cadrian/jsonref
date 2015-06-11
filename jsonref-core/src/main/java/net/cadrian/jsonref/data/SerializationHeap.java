@@ -18,7 +18,7 @@ package net.cadrian.jsonref.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.cadrian.jsonref.JsonAtomicValues;
+import net.cadrian.jsonref.JsonConverter;
 
 public class SerializationHeap extends AbstractSerializationData {
 	private final List<AbstractSerializationObject> heap = new ArrayList<>();
@@ -40,7 +40,7 @@ public class SerializationHeap extends AbstractSerializationData {
 
 	@Override
 	public void toJson(final StringBuilder result,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		final int n = heap.size();
 		assert n > 0 : "empty heap?!";
 		if (n == 1) {
@@ -61,16 +61,16 @@ public class SerializationHeap extends AbstractSerializationData {
 	}
 
 	@Override
-	public Object fromJson(final JsonAtomicValues converter) {
-		return heap.get(0).fromJson(this, converter, null);
+	public <T> T fromJson(final Class<? extends T> wantedType,
+			final JsonConverter converter) {
+		return heap.get(0).fromJson(this, wantedType, converter);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
-		return (T) fromJson(converter);
+			final Class<? extends T> propertyType,
+			final JsonConverter converter) {
+		return fromJson(propertyType, converter);
 	}
 
 	void setDeser(final int ref, final Object d) {

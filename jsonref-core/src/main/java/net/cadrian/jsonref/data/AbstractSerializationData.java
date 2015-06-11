@@ -15,15 +15,14 @@
  */
 package net.cadrian.jsonref.data;
 
-import net.cadrian.jsonref.JsonAtomicValues;
+import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.SerializationData;
 
 abstract class AbstractSerializationData implements SerializationData {
 	@Override
-	public Object fromJson(final JsonAtomicValues converter) {
-		return fromJson(null, converter, null);
+	public <T> T fromJson(final Class<? extends T> wantedType, JsonConverter converter) {
+		return fromJson(null, wantedType, converter);
 	}
 
-	abstract <T> T fromJson(SerializationHeap heap, JsonAtomicValues converter,
-			Class<? extends T> propertyType);
+	abstract <T> T fromJson(SerializationHeap heap, Class<? extends T> propertyType, JsonConverter converter);
 }

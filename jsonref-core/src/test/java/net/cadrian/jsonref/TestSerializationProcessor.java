@@ -36,7 +36,7 @@ public class TestSerializationProcessor {
 	private SerializationProcessor that;
 
 	@Mock
-	private JsonAtomicValues converter;
+	private JsonConverter converter;
 
 	@Before
 	public void setup() {

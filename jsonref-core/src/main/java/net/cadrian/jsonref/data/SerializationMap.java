@@ -18,7 +18,7 @@ package net.cadrian.jsonref.data;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.cadrian.jsonref.JsonAtomicValues;
+import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
@@ -35,7 +35,7 @@ public class SerializationMap extends AbstractSerializationObject {
 
 	@Override
 	public void toJson(final StringBuilder result,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		if (isMapOfStrings) {
 			toJsonMap(result, converter);
 		} else {
@@ -44,7 +44,7 @@ public class SerializationMap extends AbstractSerializationObject {
 	}
 
 	private void toJsonMap(final StringBuilder result,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		result.append('{');
 		String sep = "";
 		for (final Map.Entry<SerializationData, SerializationData> data : map
@@ -59,7 +59,7 @@ public class SerializationMap extends AbstractSerializationObject {
 	}
 
 	private void toJsonArray(final StringBuilder result,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		result.append('[');
 		String sep = "";
 		for (final Map.Entry<SerializationData, SerializationData> data : map
@@ -76,8 +76,7 @@ public class SerializationMap extends AbstractSerializationObject {
 
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
+			final Class<? extends T> propertyType, JsonConverter converter) {
 		throw new SerializationException(
 				"SerializationMap not used for deserialization");
 	}

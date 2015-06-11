@@ -13,12 +13,6 @@
 	<name>jsonref-core</name>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
-			<version>4.0</version>
-		</dependency>
-		
 		<!-- tests -->
 		<dependency>
 			<groupId>junit</groupId>

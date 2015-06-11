@@ -15,15 +15,34 @@
  */
 package net.cadrian.jsonref.data;
 
-import net.cadrian.jsonref.JsonAtomicValues;
+import net.cadrian.jsonref.JsonConverter;
 
 public class SerializationValue extends AbstractSerializationData {
 	private final Class<?> type;
 	private final Object value;
+	private final String string;
 
+	/**
+	 * Constructor for serialization
+	 *
+	 * @param type
+	 * @param value
+	 */
 	public SerializationValue(final Class<?> type, final Object value) {
 		this.type = type;
 		this.value = value;
+		this.string = null;
+	}
+
+	/**
+	 * Constructor for deserialization: the value is always a string, type is
+	 * not yet known
+	 *
+	 * @param value
+	 */
+	public SerializationValue(final String value) {
+		this.type = null;
+		this.value = this.string = value;
 	}
 
 	/**
@@ -45,19 +64,22 @@ public class SerializationValue extends AbstractSerializationData {
 	}
 
 	@Override
-	public void toJson(final StringBuilder result, final JsonAtomicValues converter) {
+	public void toJson(final StringBuilder result,
+			final JsonConverter converter) {
 		result.append(converter.toJson(value));
 	}
 
 	@Override
-	public Object fromJson(final JsonAtomicValues converter) {
-		return value;
+	public <T> T fromJson(final Class<? extends T> wantedType,
+			final JsonConverter converter) {
+		return converter.fromJson(string, wantedType);
 	}
 
 	@Override
-	<T> T fromJson(final SerializationHeap heap, final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
-		return converter.fromJson((String) value, propertyType);
+	<T> T fromJson(final SerializationHeap heap,
+			final Class<? extends T> propertyType,
+			final JsonConverter converter) {
+		return fromJson(propertyType, converter);
 	}
 
 }

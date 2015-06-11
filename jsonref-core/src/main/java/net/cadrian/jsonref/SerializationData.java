@@ -16,7 +16,7 @@
 package net.cadrian.jsonref;
 
 public interface SerializationData {
-	void toJson(StringBuilder result, JsonAtomicValues converter);
+	void toJson(StringBuilder result, JsonConverter converter);
 
-	Object fromJson(JsonAtomicValues converter);
+	<T> T fromJson(Class<? extends T> wantedType, JsonConverter converter);
 }

@@ -15,7 +15,7 @@
  */
 package net.cadrian.jsonref.data;
 
-import net.cadrian.jsonref.JsonAtomicValues;
+import net.cadrian.jsonref.JsonConverter;
 
 public class SerializationRef extends AbstractSerializationData {
 	private final int ref;
@@ -35,17 +35,16 @@ public class SerializationRef extends AbstractSerializationData {
 
 	@Override
 	public void toJson(final StringBuilder result,
-			final JsonAtomicValues converter) {
+			final JsonConverter converter) {
 		result.append('$').append(ref);
 	}
 
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final JsonAtomicValues converter,
-			final Class<? extends T> propertyType) {
+			final Class<? extends T> propertyType, JsonConverter converter) {
 		assert heap != null : "no heap for reference?!";
 
-		return heap.get(ref).fromJson(heap, converter, propertyType);
+		return heap.get(ref).fromJson(heap, propertyType, converter);
 	}
 
 }
