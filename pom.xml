@@ -7,8 +7,33 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>jsonref</name>
+	<name>${project.groupId}:${project.artifactId}</name>
+	<description>
+		JSON/R is an extended JSON format that natively supports object references, thus allowing to de/serialize object graphs, even with cycles.
+	</description>
+
 	<url>https://github.com/cadrian/jsonref</url>
+
+	<licenses>
+		<license>
+			<name>MIT</name>
+			<url>http://opensource.org/licenses/MIT</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	
+	<developers>
+		<developer>
+			<name>Cyril Adrian</name>
+			<email>cyril.adrian@gmail.com</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<url>https://github.com/cadrian/jsonref</url>
+		<connection>scm:git:https://github.com/cadrian/jsonref.git</connection>
+		<developerConnection>scm:git:git@github.com:cadrian/jsonref.git</developerConnection>
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
