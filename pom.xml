@@ -38,6 +38,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.7</java.version>
+		<gpg.keyname>E081F241</gpg.keyname>
 	</properties>
 
 	<modules>
