@@ -7,8 +7,7 @@ See http://cadrature.blogspot.fr/2015/06/jsonr.html
 JSON is well and good, but it has one shortcoming: the management of object references. When you have to
 serialize an object graph, with object cycles, JSON is lost.
 
-My client needed to serialize such a graph. So I wrote a JSON extension, dubbed "JSON/R" (JSON with
-references).
+I needed to serialize such a graph. So I wrote a JSON extension, dubbed "JSON/R" (JSON with references).
 
 I wanted the parser to stay as pretty as the standard JSON's (see a previous article), with the same property:
 a parser with no backtrack.
