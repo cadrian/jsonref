@@ -99,7 +99,7 @@ public class TestDeserializationProcessor {
 		when(converter.fromJson("\"string2\"", String.class)).thenReturn(
 				string2);
 
-		final String[] strings = that.deserialize("[\"string1\",\"string2\"]",
+		final String[] strings = that.deserialize("[\"string1\", \"string2\"]",
 				converter, String[].class);
 		assertEquals(string1, strings[0]);
 		assertEquals(string2, strings[1]);
@@ -116,7 +116,7 @@ public class TestDeserializationProcessor {
 				new ArrayList());
 
 		final Collection<?> objects = that.deserialize(
-				"[\"string1\",\"string2\"]", converter, Collection.class);
+				"[\"string1\", \"string2\"]", converter, Collection.class);
 		assertEquals(2, objects.size());
 		final Iterator<?> iterator = objects.iterator();
 		assertEquals(string1, iterator.next());
@@ -175,7 +175,7 @@ public class TestDeserializationProcessor {
 		when(converter.newMap(Map.class)).thenReturn(new HashMap());
 
 		final Map<?, ?> objects = that.deserialize(
-				"[[1,\"string1\"],[2,\"string2\"]]", converter, Map.class);
+				"[[1,\"string1\"], [2,\"string2\"]]", converter, Map.class);
 		assertEquals(2, objects.size());
 		assertEquals(string1, objects.get(now));
 		assertEquals(string2, objects.get(dontPanic));

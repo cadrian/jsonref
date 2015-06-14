@@ -46,6 +46,12 @@ class DeserializationProcessor {
 			index++;
 		}
 
+		void skipSpaces() {
+			while (isValid() && Character.isWhitespace(get())) {
+				next();
+			}
+		}
+
 		boolean isValid() {
 			return index < chars.length;
 		}
@@ -95,6 +101,7 @@ class DeserializationProcessor {
 	private SerializationData parse(final DeserializationContext context,
 			final JsonConverter converter) {
 		SerializationData result = null;
+		context.skipSpaces();
 		if (context.isValid()) {
 			switch (context.get()) {
 			case '<':
@@ -154,6 +161,7 @@ class DeserializationProcessor {
 		String property = null;
 		context.next(); // skip '{'
 		while (state > 0) {
+			context.skipSpaces();
 			if (!context.isValid()) {
 				throw new ParseException("invalid object: not terminated at "
 						+ context.getIndex());
@@ -234,6 +242,7 @@ class DeserializationProcessor {
 		int state = 1;
 		context.next(); // skip open
 		while (state > 0) {
+			context.skipSpaces();
 			if (!context.isValid()) {
 				throw new ParseException("invalid " + type
 						+ ": not terminated at " + context.getIndex());
