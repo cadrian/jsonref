@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import net.cadrian.jsonref.JsonConverter;
+import net.cadrian.jsonref.Prettiness.Context;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
@@ -54,7 +55,7 @@ public class SerializationObject extends AbstractSerializationObject {
 	}
 
 	@Override
-	public void toJson(final StringBuilder result, final JsonConverter converter) {
+	public void toJson(final StringBuilder result, final JsonConverter converter, Context context) {
 		result.append('{');
 		String sep = "";
 		for (final Map.Entry<String, AbstractSerializationData> value : properties
@@ -62,7 +63,7 @@ public class SerializationObject extends AbstractSerializationObject {
 			result.append(sep);
 			result.append(converter.toJson(value.getKey()));
 			result.append(':');
-			value.getValue().toJson(result, converter);
+			value.getValue().toJson(result, converter, context);
 			sep = ",";
 		}
 		result.append('}');

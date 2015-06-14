@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.cadrian.jsonref.Prettiness.Context;
 import net.cadrian.jsonref.data.SerializationArray;
 import net.cadrian.jsonref.data.SerializationHeap;
 import net.cadrian.jsonref.data.SerializationMap;
@@ -98,12 +99,18 @@ class SerializationProcessor {
 	 * @param value
 	 *            the object to serialize
 	 * @param converter
-	 *            the Javers converter
+	 *            the converter
+	 * @param context
+	 *            the prettiness level
 	 * @return the serialized object
 	 */
-	public String serialize(final Object value, final JsonConverter converter) {
+	public String serialize(final Object value, final JsonConverter converter,
+			Context context) {
 		if (value == null) {
 			return "null";
+		}
+		if (context == null) {
+			context = Prettiness.COMPACT.newContext();
 		}
 
 		final StringBuilder result = new StringBuilder();
@@ -112,11 +119,11 @@ class SerializationProcessor {
 		final SerializationData data = getData(null, refs, value,
 				value.getClass(), converter);
 		if (data != null) {
-			data.toJson(result, converter);
+			data.toJson(result, converter, context);
 		} else {
 			final SerializationHeap heap = new SerializationHeap();
 			getData(heap, refs, value, value.getClass(), converter);
-			heap.toJson(result, converter);
+			heap.toJson(result, converter, context);
 		}
 		return result.toString();
 	}

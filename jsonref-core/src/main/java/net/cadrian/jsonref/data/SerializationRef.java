@@ -16,6 +16,7 @@
 package net.cadrian.jsonref.data;
 
 import net.cadrian.jsonref.JsonConverter;
+import net.cadrian.jsonref.Prettiness.Context;
 
 public class SerializationRef extends AbstractSerializationData {
 	private final int ref;
@@ -35,7 +36,7 @@ public class SerializationRef extends AbstractSerializationData {
 
 	@Override
 	public void toJson(final StringBuilder result,
-			final JsonConverter converter) {
+			final JsonConverter converter, Context context) {
 		result.append('$').append(ref);
 	}
 

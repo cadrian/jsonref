@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.cadrian.jsonref.JsonConverter;
+import net.cadrian.jsonref.Prettiness;
+import net.cadrian.jsonref.Prettiness.Context;
+import net.cadrian.jsonref.Prettiness.Serializer;
 
 public class SerializationHeap extends AbstractSerializationData {
 	private final List<AbstractSerializationObject> heap = new ArrayList<>();
@@ -40,22 +43,22 @@ public class SerializationHeap extends AbstractSerializationData {
 
 	@Override
 	public void toJson(final StringBuilder result,
-			final JsonConverter converter) {
+			final JsonConverter converter, final Context context) {
 		final int n = heap.size();
 		assert n > 0 : "empty heap?!";
 		if (n == 1) {
-			heap.get(0).toJson(result, converter);
+			heap.get(0).toJson(result, converter, context);
 		} else {
 			result.append('<');
-			for (int i = 0; i < n; i++) {
-				final AbstractSerializationObject ref = heap.get(i);
-				assert ref.getRef() == i : "wrong ref " + ref.getRef() + " != "
-						+ i;
-				if (i > 0) {
-					result.append(",");
+			context.toJson(result, heap,
+					new Serializer<AbstractSerializationObject>() {
+				@Override
+				public void toJson(final StringBuilder result,
+						final AbstractSerializationObject value,
+						final Prettiness level) {
+					value.toJson(result, converter, context);
 				}
-				ref.toJson(result, converter);
-			}
+			});
 			result.append('>');
 		}
 	}
@@ -68,8 +71,7 @@ public class SerializationHeap extends AbstractSerializationData {
 
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType,
-			final JsonConverter converter) {
+			final Class<? extends T> propertyType, final JsonConverter converter) {
 		return fromJson(propertyType, converter);
 	}
 

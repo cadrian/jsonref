@@ -15,8 +15,10 @@
  */
 package net.cadrian.jsonref;
 
+import net.cadrian.jsonref.Prettiness.Context;
+
 public interface SerializationData {
-	void toJson(StringBuilder result, JsonConverter converter);
+	void toJson(StringBuilder result, JsonConverter converter, Context context);
 
 	<T> T fromJson(Class<? extends T> wantedType, JsonConverter converter);
 }

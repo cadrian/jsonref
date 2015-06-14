@@ -15,10 +15,15 @@
  */
 package net.cadrian.jsonref.data;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.cadrian.jsonref.JsonConverter;
+import net.cadrian.jsonref.Prettiness;
+import net.cadrian.jsonref.Prettiness.Context;
+import net.cadrian.jsonref.Prettiness.Serializer;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
@@ -35,48 +40,71 @@ public class SerializationMap extends AbstractSerializationObject {
 
 	@Override
 	public void toJson(final StringBuilder result,
-			final JsonConverter converter) {
+			final JsonConverter converter, final Context context) {
 		if (isMapOfStrings) {
-			toJsonMap(result, converter);
+			toJsonMap(result, converter, context);
 		} else {
-			toJsonArray(result, converter);
+			toJsonArray(result, converter, context);
 		}
 	}
 
 	private void toJsonMap(final StringBuilder result,
-			final JsonConverter converter) {
+			final JsonConverter converter, final Context context) {
 		result.append('{');
-		String sep = "";
-		for (final Map.Entry<SerializationData, SerializationData> data : map
-				.entrySet()) {
-			result.append(sep);
-			data.getKey().toJson(result, converter);
-			result.append(':');
-			data.getValue().toJson(result, converter);
-			sep = ",";
-		}
+		context.toJson(
+				result,
+				map.entrySet(),
+				new Serializer<Map.Entry<SerializationData, SerializationData>>() {
+					@Override
+					public void toJson(
+							final StringBuilder result,
+							final Entry<SerializationData, SerializationData> value,
+							final Prettiness level) {
+						value.getKey().toJson(result, converter, context);
+						result.append(':');
+						if (context.getPrettiness() != Prettiness.COMPACT) {
+							result.append(' ');
+						}
+						value.getValue().toJson(result, converter, context);
+					}
+				});
 		result.append('}');
 	}
 
 	private void toJsonArray(final StringBuilder result,
-			final JsonConverter converter) {
+			final JsonConverter converter, final Context context) {
 		result.append('[');
-		String sep = "";
-		for (final Map.Entry<SerializationData, SerializationData> data : map
-				.entrySet()) {
-			result.append(sep).append('[');
-			data.getKey().toJson(result, converter);
-			result.append(',');
-			data.getValue().toJson(result, converter);
-			result.append(']');
-			sep = ",";
-		}
+		context.toJson(
+				result,
+				map.entrySet(),
+				new Serializer<Map.Entry<SerializationData, SerializationData>>() {
+					@Override
+					public void toJson(
+							final StringBuilder result,
+							final Entry<SerializationData, SerializationData> value,
+							final Prettiness level) {
+						result.append('[');
+						context.toJson(
+								result,
+								Arrays.asList(value.getKey(), value.getValue()),
+								new Serializer<SerializationData>() {
+									@Override
+									public void toJson(
+											final StringBuilder result,
+											final SerializationData value,
+											final Prettiness level) {
+										value.toJson(result, converter, context);
+									}
+								});
+						result.append(']');
+					}
+				});
 		result.append(']');
 	}
 
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType, JsonConverter converter) {
+			final Class<? extends T> propertyType, final JsonConverter converter) {
 		throw new SerializationException(
 				"SerializationMap not used for deserialization");
 	}

@@ -16,6 +16,7 @@
 package net.cadrian.jsonref.data;
 
 import net.cadrian.jsonref.JsonConverter;
+import net.cadrian.jsonref.Prettiness.Context;
 
 public class SerializationValue extends AbstractSerializationData {
 	private final Class<?> type;
@@ -65,7 +66,7 @@ public class SerializationValue extends AbstractSerializationData {
 
 	@Override
 	public void toJson(final StringBuilder result,
-			final JsonConverter converter) {
+			final JsonConverter converter, Context context) {
 		result.append(converter.toJson(value));
 	}
 

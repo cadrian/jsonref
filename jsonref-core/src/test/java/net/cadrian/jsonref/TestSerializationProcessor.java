@@ -45,26 +45,29 @@ public class TestSerializationProcessor {
 
 	@Test
 	public void testInteger() {
+		final Prettiness.Context context = Prettiness.COMPACT.newContext();
 		when(converter.isAtomicValue(Integer.class)).thenReturn(true);
 		when(converter.toJson(42)).thenReturn("foo");
-		final String json = that.serialize(42, converter);
+		final String json = that.serialize(42, converter, context);
 		assertEquals("foo", json);
 	}
 
 	@Test
 	public void testString() {
+		final Prettiness.Context context = Prettiness.COMPACT.newContext();
 		when(converter.isAtomicValue(String.class)).thenReturn(true);
 		when(converter.toJson("foo")).thenReturn("bar");
-		final String json = that.serialize("foo", converter);
+		final String json = that.serialize("foo", converter, context);
 		assertEquals("bar", json);
 	}
 
 	@Test
 	public void testDate() {
+		final Prettiness.Context context = Prettiness.COMPACT.newContext();
 		final Date now = new Date();
 		when(converter.isAtomicValue(Date.class)).thenReturn(true);
 		when(converter.toJson(now)).thenReturn("now");
-		final String json = that.serialize(now, converter);
+		final String json = that.serialize(now, converter, context);
 		assertEquals("now", json);
 	}
 
@@ -76,9 +79,16 @@ public class TestSerializationProcessor {
 		when(converter.isAtomicValue(String.class)).thenReturn(true);
 		when(converter.toJson(now)).thenReturn("now");
 		when(converter.toJson(string)).thenReturn("string");
-		final String json = that.serialize(new Object[] { now, string },
-				converter);
-		assertEquals("[now,string]", json);
+		final String jsonCompact = that.serialize(new Object[] { now, string },
+				converter, Prettiness.COMPACT.newContext());
+		assertEquals("[now,string]", jsonCompact);
+		final String jsonLegible = that.serialize(new Object[] { now, string },
+				converter, Prettiness.LEGIBLE.newContext());
+		assertEquals("[now, string]", jsonLegible);
+		final String jsonIndented = that.serialize(
+				new Object[] { now, string }, converter,
+				Prettiness.INDENTED.newContext());
+		assertEquals("[\n    now,\n    string\n]", jsonIndented);
 	}
 
 	@Test
@@ -89,9 +99,18 @@ public class TestSerializationProcessor {
 		when(converter.isAtomicValue(String.class)).thenReturn(true);
 		when(converter.toJson(now)).thenReturn("now");
 		when(converter.toJson(string)).thenReturn("string");
-		final String json = that.serialize(
-				Arrays.asList(new Object[] { now, string }), converter);
-		assertEquals("[now,string]", json);
+		final String jsonCompact = that.serialize(
+				Arrays.asList(new Object[] { now, string }), converter,
+				Prettiness.COMPACT.newContext());
+		assertEquals("[now,string]", jsonCompact);
+		final String jsonLegible = that.serialize(
+				Arrays.asList(new Object[] { now, string }), converter,
+				Prettiness.LEGIBLE.newContext());
+		assertEquals("[now, string]", jsonLegible);
+		final String jsonIndented = that.serialize(
+				Arrays.asList(new Object[] { now, string }), converter,
+				Prettiness.INDENTED.newContext());
+		assertEquals("[\n    now,\n    string\n]", jsonIndented);
 	}
 
 	@Test
@@ -109,9 +128,18 @@ public class TestSerializationProcessor {
 		final Map<Object, Object> map = new HashMap<>();
 		map.put(k1, now);
 		map.put(k2, string);
-		final String json = that.serialize(map, converter);
-		assertTrue(json.equals("{1:now,2:string}")
-				|| json.equals("{2:string,1:now}"));
+		final String jsonCompact = that.serialize(map, converter,
+				Prettiness.COMPACT.newContext());
+		assertTrue(jsonCompact.equals("{1:now,2:string}")
+				|| jsonCompact.equals("{2:string,1:now}"));
+		final String jsonLegible = that.serialize(map, converter,
+				Prettiness.LEGIBLE.newContext());
+		assertTrue(jsonLegible.equals("{1: now, 2: string}")
+				|| jsonLegible.equals("{2: string, 1: now}"));
+		final String jsonIntented = that.serialize(map, converter,
+				Prettiness.INDENTED.newContext());
+		assertTrue(jsonIntented.equals("{\n    1: now,\n    2: string\n}")
+				|| jsonIntented.equals("{\n    2: string,\n    1: now\n}"));
 	}
 
 	@Test
@@ -131,9 +159,20 @@ public class TestSerializationProcessor {
 		final Map<Object, Object> map = new HashMap<>();
 		map.put(k1, now);
 		map.put(k2, string);
-		final String json = that.serialize(map, converter);
-		assertTrue(json.equals("[[1,now],[2,string]]")
-				|| json.equals("[[2,string],[1,now]]"));
+		final String jsonCompact = that.serialize(map, converter,
+				Prettiness.COMPACT.newContext());
+		assertTrue(jsonCompact.equals("[[1,now],[2,string]]")
+				|| jsonCompact.equals("[[2,string],[1,now]]"));
+		final String jsonLegible = that.serialize(map, converter,
+				Prettiness.LEGIBLE.newContext());
+		assertTrue(jsonLegible.equals("[[1, now], [2, string]]")
+				|| jsonLegible.equals("[[2, string], [1, now]]"));
+		final String jsonIndented = that.serialize(map, converter,
+				Prettiness.INDENTED.newContext());
+		assertTrue(jsonIndented
+				.equals("[\n    [\n        1,\n        now\n    ],\n    [\n        2,\n        string\n    ]\n]")
+				|| jsonIndented
+				.equals("[\n    [\n        2,\n        string\n    ],\n    [\n        1,\n        now\n    ]\n]"));
 	}
 
 }

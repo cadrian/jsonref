@@ -23,6 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import net.cadrian.jsonref.JsonConverter;
+import net.cadrian.jsonref.Prettiness;
+import net.cadrian.jsonref.Prettiness.Context;
+import net.cadrian.jsonref.Prettiness.Serializer;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
@@ -37,14 +40,16 @@ public class SerializationArray extends AbstractSerializationObject {
 	}
 
 	@Override
-	public void toJson(final StringBuilder result, final JsonConverter converter) {
+	public void toJson(final StringBuilder result,
+			final JsonConverter converter, final Context context) {
 		result.append('[');
-		String sep = "";
-		for (final SerializationData data : array) {
-			result.append(sep);
-			data.toJson(result, converter);
-			sep = ",";
-		}
+		context.toJson(result, array, new Serializer<SerializationData>() {
+			@Override
+			public void toJson(final StringBuilder result,
+					final SerializationData value, final Prettiness level) {
+				value.toJson(result, converter, context);
+			}
+		});
 		result.append(']');
 	}
 
@@ -92,19 +97,19 @@ public class SerializationArray extends AbstractSerializationObject {
 		assert propertyType == null
 				|| Collection.class.isAssignableFrom(propertyType) : "not a collection";
 
-		@SuppressWarnings("rawtypes")
-		final Collection<Object> result = (Collection<Object>) converter
+				@SuppressWarnings("rawtypes")
+				final Collection<Object> result = (Collection<Object>) converter
 				.newCollection((Class<Collection>) propertyType);
-		if (heap != null) {
-			heap.setDeser(ref, result);
-		}
+				if (heap != null) {
+					heap.setDeser(ref, result);
+				}
 
-		for (final SerializationData data : array) {
-			result.add(((AbstractSerializationData) data).fromJson(heap, null,
-					converter));
-		}
+				for (final SerializationData data : array) {
+					result.add(((AbstractSerializationData) data).fromJson(heap, null,
+							converter));
+				}
 
-		return (T) result;
+				return (T) result;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -114,7 +119,7 @@ public class SerializationArray extends AbstractSerializationObject {
 
 		@SuppressWarnings("rawtypes")
 		final Map<Object, Object> result = (Map<Object, Object>) converter
-				.newMap((Class<Map>) propertyType);
+		.newMap((Class<Map>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}

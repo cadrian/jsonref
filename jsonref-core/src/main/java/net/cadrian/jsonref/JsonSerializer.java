@@ -53,10 +53,24 @@ public class JsonSerializer {
 	 *
 	 * @param object
 	 *            the object to serialize
+	 * @param level
+	 *            the prettiness level
+	 * @return the JSON/R string
+	 */
+	public String toJson(final Object object, final Prettiness level) {
+		return SERIALIZATION_PROCESSOR.serialize(object, converter,
+				level == null ? null : level.newContext());
+	}
+
+	/**
+	 * Serialize to JSON/R
+	 *
+	 * @param object
+	 *            the object to serialize
 	 * @return the JSON/R string
 	 */
 	public String toJson(final Object object) {
-		return SERIALIZATION_PROCESSOR.serialize(object, converter);
+		return toJson(object, null);
 	}
 
 	/**
@@ -95,7 +109,7 @@ public class JsonSerializer {
 	public <T> T clone(final T object) {
 		@SuppressWarnings("unchecked")
 		final Class<? extends T> wantedType = (Class<? extends T>) object
-				.getClass();
+		.getClass();
 		return fromJson(toJson(object), wantedType);
 	}
 
