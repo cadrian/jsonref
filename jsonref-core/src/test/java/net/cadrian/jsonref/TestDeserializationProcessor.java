@@ -16,7 +16,6 @@
 package net.cadrian.jsonref;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -59,9 +58,6 @@ public class TestDeserializationProcessor {
 
 		i = that.deserialize("42", converter, null);
 		assertEquals(421, i.intValue());
-
-		i = that.deserialize("null", converter, null);
-		assertNull(i);
 	}
 
 	@Test

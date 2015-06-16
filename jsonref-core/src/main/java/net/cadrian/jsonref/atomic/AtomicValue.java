@@ -201,8 +201,10 @@ enum AtomicValue {
 	@SuppressWarnings("unchecked")
 	<T> T fromJson(final String json, final Class<? extends T> type) {
 		assert classes.contains(type);
-		T result = null;
-		if (!"null".equals(json)) {
+		final T result;
+		if (json == null) {
+			result = null;
+		} else {
 			result = (T) fromJson0(json, type);
 		}
 		return result;

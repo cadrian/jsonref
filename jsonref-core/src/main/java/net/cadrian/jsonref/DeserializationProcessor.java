@@ -29,7 +29,7 @@ class DeserializationProcessor {
 
 	private static final char[] CONST_NULL = new char[] { 'n', 'u', 'l', 'l' };
 	private static final char[] CONST_FALSE = new char[] { 'f', 'a', 'l', 's',
-			'e' };
+	'e' };
 	private static final char[] CONST_TRUE = new char[] { 't', 'r', 'u', 'e' };
 
 	private static class DeserializationContext {
@@ -126,7 +126,7 @@ class DeserializationProcessor {
 				result = parseConst(context, CONST_FALSE, "false");
 				break;
 			case 'n':
-				result = parseConst(context, CONST_NULL, "null");
+				result = parseConst(context, CONST_NULL, null);
 				break;
 			default:
 				if (Character.isDigit(context.get())) {
@@ -179,7 +179,7 @@ class DeserializationProcessor {
 				if (result.contains(property)) {
 					throw new ParseException(
 							"invalid object: duplicated property \"" + property
-									+ "\" at " + context.getIndex());
+							+ "\" at " + context.getIndex());
 				}
 				state = 2;
 				break;
@@ -340,14 +340,14 @@ class DeserializationProcessor {
 	private SerializationValue parseConst(final DeserializationContext context,
 			final char[] string, final String object) {
 		assert string.length > 0 && context.isValid()
-				&& context.get() == string[0] : "unexpected character";
+		&& context.get() == string[0] : "unexpected character";
 
 		for (int i = 0; i < string.length; i++) {
 			if (!context.isValid() || context.get() != string[i]) {
 				throw new ParseException(
 						"invalid const, unexpected character '" + context.get()
-								+ "' instead of '" + string[i] + "' at "
-								+ context.getIndex());
+						+ "' instead of '" + string[i] + "' at "
+						+ context.getIndex());
 			}
 			context.next();
 		}

@@ -16,6 +16,8 @@
 package net.cadrian.jsonref;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
@@ -27,7 +29,7 @@ import org.junit.Test;
 public class TestJsonSerializer {
 
 	@Test
-	public void testCycle() {
+	public void testCycleToJson() {
 		final JsonSerializer ser = new JsonSerializer();
 		final Pojo a = new Pojo();
 		a.setValue("a");
@@ -54,7 +56,7 @@ public class TestJsonSerializer {
 					public boolean isTransient(final Field field) {
 						return super.isTransient(field)
 								|| (field.getDeclaringClass() == Pojo.class && field
-								.getType() == Pojo.class);
+										.getType() == Pojo.class);
 					}
 				});
 		final Pojo a = new Pojo();
@@ -75,4 +77,19 @@ public class TestJsonSerializer {
 
 	}
 
+	@Test
+	public void testFromJson() {
+		final String json = "<{\"class\":\"net.cadrian.jsonref.Pojo\",\"reference\":$1,\"timestamp\":\"3915-07-10T12:00:00.000\",\"value\":\"a\"},{\"class\":\"net.cadrian.jsonref.Pojo\",\"reference\":$0,\"timestamp\":null,\"value\":null}>";
+		final JsonSerializer ser = new JsonSerializer();
+		final Pojo a = ser.fromJson(json, Pojo.class);
+		final Pojo b = a.getReference();
+
+		@SuppressWarnings("deprecation")
+		final Timestamp ts = new Timestamp(2015, 6, 10, 12, 0, 0, 0);
+		assertEquals(ts, a.getTimestamp());
+		assertEquals("a", a.getValue());
+		assertNull(b.getTimestamp());
+		assertSame(a, b.getReference());
+		assertNull(b.getValue());
+	}
 }
