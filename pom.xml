@@ -38,7 +38,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>1.7</java.version>
-		<gpg.keyname>E081F241</gpg.keyname>
+		<gpg.keyname>Cyril Adrian (Specific key for the jsonref project) &lt;cyril.adrian@gmail.com&gt;</gpg.keyname>
 	</properties>
 
 	<modules>
