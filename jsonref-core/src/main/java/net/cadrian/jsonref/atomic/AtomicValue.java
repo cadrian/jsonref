@@ -200,7 +200,8 @@ enum AtomicValue {
 
 	@SuppressWarnings("unchecked")
 	<T> T fromJson(final String json, final Class<? extends T> type) {
-		assert classes.contains(type);
+		assert get(type) != null : "expected one of " + classes
+				+ " (or an heir thereof) but got " + type;
 		final T result;
 		if (json == null) {
 			result = null;
