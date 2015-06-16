@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>net.cadrian.jsonref</groupId>
 		<artifactId>jsonref</artifactId>
-		<version>0.0.4-SNAPSHOT</version>
+		<version>0.0.4</version>
 	</parent>
 
 	<artifactId>jsonref-core</artifactId>
