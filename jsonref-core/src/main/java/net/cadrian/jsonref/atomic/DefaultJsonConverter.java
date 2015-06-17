@@ -34,6 +34,9 @@ import java.util.TreeSet;
 import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.SerializationException;
 
+/**
+ * The default JSON/R converter
+ */
 @SuppressWarnings("rawtypes")
 public class DefaultJsonConverter implements JsonConverter {
 
@@ -74,6 +77,11 @@ public class DefaultJsonConverter implements JsonConverter {
 		return AtomicValue.get(propertyType) != null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.cadrian.jsonref.JsonConverter#newCollection(java.lang.Class)
+	 */
 	@Override
 	public Collection<?> newCollection(final Class<Collection> wantedType) {
 		final Collection<?> result;
@@ -96,6 +104,11 @@ public class DefaultJsonConverter implements JsonConverter {
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.cadrian.jsonref.JsonConverter#newMap(java.lang.Class)
+	 */
 	@Override
 	public Map<?, ?> newMap(final Class<Map> wantedType) {
 		Map<?, ?> result = null;
@@ -118,6 +131,12 @@ public class DefaultJsonConverter implements JsonConverter {
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.JsonConverter#isTransient(java.lang.reflect.Field)
+	 */
 	@Override
 	public boolean isTransient(final Field field) {
 		// By default, all the actual fields are serialized

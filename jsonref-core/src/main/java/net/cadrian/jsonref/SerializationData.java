@@ -17,8 +17,35 @@ package net.cadrian.jsonref;
 
 import net.cadrian.jsonref.Prettiness.Context;
 
+/**
+ * Serialization data is used as an intermediate object graph for both
+ * serialization and deserialization. It exposes helper methods for both
+ * serialization and deserializatin.
+ */
 public interface SerializationData {
+
+	/**
+	 * Serialization
+	 *
+	 * @param result
+	 *            the JSON/R string to append to
+	 * @param converter
+	 *            the converter
+	 * @param context
+	 *            the prettiness context
+	 */
 	void toJson(StringBuilder result, JsonConverter converter, Context context);
 
+	/**
+	 * Deserialization
+	 *
+	 * @param wantedType
+	 *            the type of the object to deserialize
+	 * @param converter
+	 *            the converter
+	 * @param <T>
+	 *            the type of the object to return
+	 * @return the actual deserialized object
+	 */
 	<T> T fromJson(Class<? extends T> wantedType, JsonConverter converter);
 }

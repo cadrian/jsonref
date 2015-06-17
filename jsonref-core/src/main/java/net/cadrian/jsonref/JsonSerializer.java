@@ -18,7 +18,7 @@ package net.cadrian.jsonref;
 import net.cadrian.jsonref.atomic.DefaultJsonConverter;
 
 /**
- * JSON/R serialization
+ * Main entry point of the JSON/R de/serialization
  */
 public class JsonSerializer {
 
@@ -28,17 +28,19 @@ public class JsonSerializer {
 	private final JsonConverter converter;
 
 	/**
-	 * Default constructor with default converter
+	 * Default constructor with a {@link DefaultJsonConverter default converter}
 	 */
 	public JsonSerializer() {
 		this(null);
 	}
 
 	/**
-	 * Constructor with converter
+	 * Constructor with a given converter
 	 *
 	 * @param converter
-	 *            the converter
+	 *            the converter; if <code>null</code> a
+	 *            {@link DefaultJsonConverter default converter} will be used
+	 *            instead
 	 */
 	public JsonSerializer(final JsonConverter converter) {
 		if (converter == null) {
@@ -54,7 +56,8 @@ public class JsonSerializer {
 	 * @param object
 	 *            the object to serialize
 	 * @param level
-	 *            the prettiness level
+	 *            the prettiness level (can be <code>null</code>, in that case a
+	 *            {@link Prettiness#COMPACT compact} string will be produced)
 	 * @return the JSON/R string
 	 */
 	public String toJson(final Object object, final Prettiness level) {
@@ -63,7 +66,7 @@ public class JsonSerializer {
 	}
 
 	/**
-	 * Serialize to JSON/R
+	 * Serialize to JSON/R ({@link Prettiness#COMPACT compact} string)
 	 *
 	 * @param object
 	 *            the object to serialize
@@ -74,7 +77,7 @@ public class JsonSerializer {
 	}
 
 	/**
-	 * Deserialize from JSON/R
+	 * Deserialize from JSON/R to the most appropriate type
 	 *
 	 * @param jsonR
 	 *            the JSON/R string
@@ -91,6 +94,8 @@ public class JsonSerializer {
 	 *            the JSON/R string
 	 * @param wantedType
 	 *            the wanted type
+	 * @param <T>
+	 *            the type of the object to return
 	 * @return the object
 	 */
 	public <T> T fromJson(final String jsonR,
@@ -104,12 +109,14 @@ public class JsonSerializer {
 	 *
 	 * @param object
 	 *            the object to clone
+	 * @param <T>
+	 *            the type of the object to return
 	 * @return the cloned object
 	 */
 	public <T> T clone(final T object) {
 		@SuppressWarnings("unchecked")
 		final Class<? extends T> wantedType = (Class<? extends T>) object
-		.getClass();
+				.getClass();
 		return fromJson(toJson(object), wantedType);
 	}
 
@@ -120,6 +127,8 @@ public class JsonSerializer {
 	 *            the object to transtype
 	 * @param wantedType
 	 *            the wanted type
+	 * @param <T>
+	 *            the type of the object to return
 	 * @return the cloned object
 	 */
 	public <T> T transtype(final Object object,

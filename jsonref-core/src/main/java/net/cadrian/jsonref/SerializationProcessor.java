@@ -35,6 +35,10 @@ import net.cadrian.jsonref.data.SerializationObject;
 import net.cadrian.jsonref.data.SerializationRef;
 import net.cadrian.jsonref.data.SerializationValue;
 
+/**
+ * Handle JSON/R serialization in two steps: build the intermediate
+ * {@link SerializationData} tree, the build the JSON/R string from that
+ */
 class SerializationProcessor {
 
 	private static class ObjectReference {

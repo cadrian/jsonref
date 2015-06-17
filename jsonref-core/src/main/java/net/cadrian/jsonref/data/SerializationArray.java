@@ -29,16 +29,38 @@ import net.cadrian.jsonref.Prettiness.Serializer;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
+/**
+ * The representation of a JSON/R array. Used to serialize arrays and
+ * collections; and to deserialize arrays, collections, and maps with non-string
+ * keys
+ */
 public class SerializationArray extends AbstractSerializationObject {
 
 	private final List<SerializationData> array;
 
+	/**
+	 * @param capacity
+	 *            default capacity of the array
+	 * @param type
+	 *            type of the array or collection; <code>null</code> if not
+	 *            known
+	 * @param ref
+	 *            reference of the array in the heap
+	 */
 	public SerializationArray(final int capacity, final Class<?> type,
 			final int ref) {
 		super(type, ref);
 		this.array = new ArrayList<SerializationData>(capacity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.Prettiness.Context)
+	 */
 	@Override
 	public void toJson(final StringBuilder result,
 			final JsonConverter converter, final Context context) {
@@ -53,6 +75,14 @@ public class SerializationArray extends AbstractSerializationObject {
 		result.append(']');
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
+	 * .jsonref.data.SerializationHeap, java.lang.Class,
+	 * net.cadrian.jsonref.JsonConverter)
+	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
 			final Class<? extends T> propertyType, final JsonConverter converter) {
@@ -147,14 +177,22 @@ public class SerializationArray extends AbstractSerializationObject {
 		return (T) result;
 	}
 
-	/**
-	 * @return the type
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.cadrian.jsonref.data.AbstractSerializationObject#getType()
 	 */
 	@Override
 	public Class<?> getType() {
 		return type;
 	}
 
+	/**
+	 * Add an object in the array
+	 * 
+	 * @param data
+	 *            the object to add
+	 */
 	public void add(final SerializationData data) {
 		array.add(data);
 	}

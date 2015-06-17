@@ -13,41 +13,14 @@
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package net.cadrian.jsonref.data;
-
-import net.cadrian.jsonref.SerializationData;
 
 /**
- * Any kind of {@link SerializationData} that can be referenced by a
- * {@linkplain SerializationHeap heap}
+ * JSON/R is an extended JSON notation that handles "references" to objects, thus allowing one to serialize / deserialize whole object graphs, even with cycles (objects referencing each other).
+ *
+ *<p>
+ * The class {@link net.cadrian.jsonref.JsonSerializer} is the main class. It provides methods to serialize object graphs to strings, deserialize strings back to object graphs,
+ * and useful methods to clone object graphs and "transtype" them (i.e. a cheap kind of dozer).
+ * </p>
  */
-public abstract class AbstractSerializationObject extends
-AbstractSerializationData {
+package net.cadrian.jsonref;
 
-	final Class<?> type;
-	final int ref;
-
-	AbstractSerializationObject(final Class<?> type, final int ref) {
-		this.type = type;
-		this.ref = ref;
-	}
-
-	/**
-	 * Getter type
-	 *
-	 * @return the type
-	 */
-	public Class<?> getType() {
-		return type;
-	}
-
-	/**
-	 * Getter ref
-	 *
-	 * @return the ref
-	 */
-	public int getRef() {
-		return ref;
-	}
-
-}

@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * Basic JSON converter, for "atomic" types
+ * Customizable JSON/R converter for "atomic" types
  */
 public interface JsonConverter {
 
@@ -40,16 +40,18 @@ public interface JsonConverter {
 	 *            the JSON string
 	 * @param propertyType
 	 *            the expected class
+	 * @param <T>
+	 *            the returned object type
 	 * @return the object
 	 */
 	<T> T fromJson(String string, Class<? extends T> propertyType);
 
 	/**
-	 * Is the type an atomic value?
+	 * Is the type considered a type of atomic values?
 	 *
 	 * @param propertyType
 	 *            the type to check
-	 * @return <code>true</code> if the type is an atomic value,
+	 * @return <code>true</code> if the type is of atomic values,
 	 *         <code>false</code> otherwise
 	 */
 	boolean isAtomicValue(Class<?> propertyType);
@@ -58,7 +60,8 @@ public interface JsonConverter {
 	 * Create a new collection of the most appropriate type.
 	 *
 	 * @param wantedType
-	 * @return
+	 *            the collection's required type
+	 * @return the new collection
 	 */
 	Collection<?> newCollection(
 			@SuppressWarnings("rawtypes") Class<Collection> wantedType);
@@ -67,7 +70,8 @@ public interface JsonConverter {
 	 * Create a new map of the most appropriate type.
 	 *
 	 * @param wantedType
-	 * @return
+	 *            the map's required type
+	 * @return the new map
 	 */
 	Map<?, ?> newMap(@SuppressWarnings("rawtypes") Class<Map> wantedType);
 
@@ -75,7 +79,9 @@ public interface JsonConverter {
 	 * Transient fields are not serialized.
 	 *
 	 * @param field
-	 * @return
+	 *            the field to check
+	 * @return <code>true</code> if the field is transient (i.e. not to be
+	 *         serialized), <code>false</code> otherwise
 	 */
 	boolean isTransient(Field field);
 

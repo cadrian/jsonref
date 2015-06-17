@@ -29,16 +29,30 @@ import net.cadrian.jsonref.Prettiness.Context;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
+/**
+ * A JSON/R object
+ */
 public class SerializationObject extends AbstractSerializationObject {
+
 	private final Map<String, AbstractSerializationData> properties = new LinkedHashMap<>();
 
+	/**
+	 * @param type
+	 *            the type of the object
+	 * @param ref
+	 *            the reference of the object in the heap
+	 */
 	public SerializationObject(final Class<?> type, final int ref) {
 		super(type, ref);
 	}
 
 	/**
+	 * Add a property to the object
+	 *
 	 * @param property
+	 *            the property name
 	 * @param value
+	 *            the property value
 	 */
 	public void add(final String property, final SerializationData value) {
 		assert !contains(property);
@@ -48,14 +62,25 @@ public class SerializationObject extends AbstractSerializationObject {
 
 	/**
 	 * @param property
-	 * @return
+	 *            the property to look for
+	 * @return <code>true</code> if the object has the given property,
+	 *         <code>false</code> otherwise
 	 */
 	public boolean contains(final String property) {
 		return properties.containsKey(property);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.Prettiness.Context)
+	 */
 	@Override
-	public void toJson(final StringBuilder result, final JsonConverter converter, Context context) {
+	public void toJson(final StringBuilder result,
+			final JsonConverter converter, final Context context) {
 		result.append('{');
 		String sep = "";
 		for (final Map.Entry<String, AbstractSerializationData> value : properties
@@ -69,6 +94,14 @@ public class SerializationObject extends AbstractSerializationObject {
 		result.append('}');
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
+	 * .jsonref.data.SerializationHeap, java.lang.Class,
+	 * net.cadrian.jsonref.JsonConverter)
+	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
 			final Class<? extends T> propertyType, final JsonConverter converter) {

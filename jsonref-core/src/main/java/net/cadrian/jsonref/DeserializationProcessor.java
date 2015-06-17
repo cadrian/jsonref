@@ -25,6 +25,10 @@ import net.cadrian.jsonref.data.SerializationObject;
 import net.cadrian.jsonref.data.SerializationRef;
 import net.cadrian.jsonref.data.SerializationValue;
 
+/**
+ * Handle JSON/R deserialization: i.e. parsing, and references resolution
+ * (object graph reconstruction)
+ */
 class DeserializationProcessor {
 
 	private static final char[] CONST_NULL = new char[] { 'n', 'u', 'l', 'l' };
@@ -98,6 +102,15 @@ class DeserializationProcessor {
 		return data.fromJson(wantedType, converter);
 	}
 
+	/**
+	 * The parser main function: parse any JSON/R kind of value
+	 *
+	 * @param context
+	 *            the parser context
+	 * @param converter
+	 *            the converter
+	 * @return the serialization data
+	 */
 	private SerializationData parse(final DeserializationContext context,
 			final JsonConverter converter) {
 		SerializationData result = null;

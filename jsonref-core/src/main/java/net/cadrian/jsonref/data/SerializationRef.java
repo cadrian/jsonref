@@ -18,9 +18,17 @@ package net.cadrian.jsonref.data;
 import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.Prettiness.Context;
 
+/**
+ * A reference in the heap
+ */
 public class SerializationRef extends AbstractSerializationData {
+
 	private final int ref;
 
+	/**
+	 * @param ref
+	 *            the reference of the object
+	 */
 	public SerializationRef(final int ref) {
 		this.ref = ref;
 	}
@@ -34,15 +42,31 @@ public class SerializationRef extends AbstractSerializationData {
 		return ref;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.Prettiness.Context)
+	 */
 	@Override
 	public void toJson(final StringBuilder result,
-			final JsonConverter converter, Context context) {
+			final JsonConverter converter, final Context context) {
 		result.append('$').append(ref);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
+	 * .jsonref.data.SerializationHeap, java.lang.Class,
+	 * net.cadrian.jsonref.JsonConverter)
+	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType, JsonConverter converter) {
+			final Class<? extends T> propertyType, final JsonConverter converter) {
 		assert heap != null : "no heap for reference?!";
 
 		return heap.get(ref).fromJson(heap, propertyType, converter);

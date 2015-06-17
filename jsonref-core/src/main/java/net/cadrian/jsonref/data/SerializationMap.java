@@ -27,17 +27,36 @@ import net.cadrian.jsonref.Prettiness.Serializer;
 import net.cadrian.jsonref.SerializationData;
 import net.cadrian.jsonref.SerializationException;
 
+/**
+ * A JSON/R map
+ */
 public class SerializationMap extends AbstractSerializationObject {
 
 	private final Map<SerializationData, SerializationData> map;
 	private boolean isMapOfStrings = true;
 
+	/**
+	 * @param capacity
+	 *            the default capacity of the map
+	 * @param type
+	 *            the map's type
+	 * @param ref
+	 *            reference of the map in the heap
+	 */
 	public SerializationMap(final int capacity, final Class<?> type,
 			final int ref) {
 		super(type, ref);
 		this.map = new HashMap<SerializationData, SerializationData>(capacity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.Prettiness.Context)
+	 */
 	@Override
 	public void toJson(final StringBuilder result,
 			final JsonConverter converter, final Context context) {
@@ -102,6 +121,14 @@ public class SerializationMap extends AbstractSerializationObject {
 		result.append(']');
 	}
 
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
+	 * .jsonref.data.SerializationHeap, java.lang.Class,
+	 * net.cadrian.jsonref.JsonConverter)
+	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
 			final Class<? extends T> propertyType, final JsonConverter converter) {
@@ -109,14 +136,24 @@ public class SerializationMap extends AbstractSerializationObject {
 				"SerializationMap not used for deserialization");
 	}
 
-	/**
-	 * @return the type
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see net.cadrian.jsonref.data.AbstractSerializationObject#getType()
 	 */
 	@Override
 	public Class<?> getType() {
 		return type;
 	}
 
+	/**
+	 * Add an object into the map
+	 * 
+	 * @param key
+	 *            the object key
+	 * @param value
+	 *            the object value
+	 */
 	public void add(final SerializationData key, final SerializationData value) {
 		map.put(key, value);
 		if (key instanceof SerializationValue) {

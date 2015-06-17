@@ -19,10 +19,13 @@ import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.SerializationData;
 
 abstract class AbstractSerializationData implements SerializationData {
+
 	@Override
-	public <T> T fromJson(final Class<? extends T> wantedType, JsonConverter converter) {
+	public <T> T fromJson(final Class<? extends T> wantedType,
+			final JsonConverter converter) {
 		return fromJson(null, wantedType, converter);
 	}
 
-	abstract <T> T fromJson(SerializationHeap heap, Class<? extends T> propertyType, JsonConverter converter);
+	abstract <T> T fromJson(SerializationHeap heap,
+			Class<? extends T> propertyType, JsonConverter converter);
 }

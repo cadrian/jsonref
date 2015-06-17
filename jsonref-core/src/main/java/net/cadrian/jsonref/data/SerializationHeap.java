@@ -23,24 +23,57 @@ import net.cadrian.jsonref.Prettiness;
 import net.cadrian.jsonref.Prettiness.Context;
 import net.cadrian.jsonref.Prettiness.Serializer;
 
+/**
+ * The heap represents a list of objects known by their reference (which is
+ * their index into the list)
+ */
 public class SerializationHeap extends AbstractSerializationData {
+
 	private final List<AbstractSerializationObject> heap = new ArrayList<>();
 	private List<Object> deser;
 
+	/**
+	 * Get an object by its reference
+	 *
+	 * @param ref
+	 *            the object reference
+	 * @return the object
+	 */
 	public AbstractSerializationObject get(final int ref) {
 		return heap.get(ref);
 	}
 
+	/**
+	 * Add an object into the heap. Its reference must match the expected
+	 * {@linkplain #nextRef() next reference}.
+	 *
+	 * @param object
+	 *            the object to add
+	 */
 	public void add(final AbstractSerializationObject object) {
 		assert object.getRef() == nextRef() : "wrong ref " + object.getRef()
 				+ " != " + nextRef();
 		heap.add(object);
 	}
 
+	/**
+	 * Get the reference of the next object to
+	 * {@linkplain #add(AbstractSerializationObject) add}
+	 *
+	 * @return the expected next reference
+	 */
 	public int nextRef() {
 		return heap.size();
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.Prettiness.Context)
+	 */
 	@Override
 	public void toJson(final StringBuilder result,
 			final JsonConverter converter, final Context context) {
@@ -69,6 +102,14 @@ public class SerializationHeap extends AbstractSerializationData {
 		return heap.get(0).fromJson(this, wantedType, converter);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
+	 * .jsonref.data.SerializationHeap, java.lang.Class,
+	 * net.cadrian.jsonref.JsonConverter)
+	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
 			final Class<? extends T> propertyType, final JsonConverter converter) {

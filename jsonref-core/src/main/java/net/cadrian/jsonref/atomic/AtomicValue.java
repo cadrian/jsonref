@@ -29,6 +29,10 @@ import java.util.Set;
 
 import net.cadrian.jsonref.SerializationException;
 
+/**
+ * The atomic values used by the {@linkplain DefaultJsonConverter default
+ * converter}
+ */
 enum AtomicValue {
 	STRING(String.class) {
 		@Override
