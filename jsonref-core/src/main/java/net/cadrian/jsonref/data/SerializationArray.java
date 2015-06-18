@@ -15,6 +15,8 @@
  */
 package net.cadrian.jsonref.data;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,23 +58,22 @@ public class SerializationArray extends AbstractSerializationObject {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
 	 */
 	@Override
-	public void toJson(final StringBuilder result,
-			final JsonConverter converter, final Context context) {
-		result.append('[');
-		context.toJson(result, array, new Serializer<SerializationData>() {
+	public void toJson(final Writer out, final JsonConverter converter,
+			final Context context) throws IOException {
+		out.append('[');
+		context.toJson(out, array, new Serializer<SerializationData>() {
 			@Override
-			public void toJson(final StringBuilder result,
-					final SerializationData value, final Prettiness level) {
-				value.toJson(result, converter, context);
+			public void toJson(final Writer out, final SerializationData value,
+					final Prettiness level) throws IOException {
+				value.toJson(out, converter, context);
 			}
 		});
-		result.append(']');
+		out.append(']');
 	}
 
 	/*
@@ -189,7 +190,7 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	/**
 	 * Add an object in the array
-	 * 
+	 *
 	 * @param data
 	 *            the object to add
 	 */

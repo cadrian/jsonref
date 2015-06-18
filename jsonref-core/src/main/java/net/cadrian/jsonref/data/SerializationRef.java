@@ -15,6 +15,9 @@
  */
 package net.cadrian.jsonref.data;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import net.cadrian.jsonref.JsonConverter;
 import net.cadrian.jsonref.Prettiness.Context;
 
@@ -44,21 +47,20 @@ public class SerializationRef extends AbstractSerializationData {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 *
+	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
 	 */
 	@Override
-	public void toJson(final StringBuilder result,
-			final JsonConverter converter, final Context context) {
-		result.append('$').append(ref);
+	public void toJson(final Writer out, final JsonConverter converter,
+			final Context context) throws IOException {
+		out.append('$').append(Integer.toString(ref));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,

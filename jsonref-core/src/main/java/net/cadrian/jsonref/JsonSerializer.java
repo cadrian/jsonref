@@ -15,6 +15,10 @@
  */
 package net.cadrian.jsonref;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+
 import net.cadrian.jsonref.atomic.DefaultJsonConverter;
 
 /**
@@ -73,7 +77,41 @@ public class JsonSerializer {
 	 * @return the JSON/R string
 	 */
 	public String toJson(final Object object) {
-		return toJson(object, null);
+		return toJson(object, (Prettiness) null);
+	}
+
+	/**
+	 * Serialize to JSON/R
+	 *
+	 * @param object
+	 *            the object to serialize
+	 * @param out
+	 *            the stream to write to
+	 * @param level
+	 *            the prettiness level (can be <code>null</code>, in that case a
+	 *            {@link Prettiness#COMPACT compact} string will be produced)
+	 * @throws IOException
+	 *             on I/O exception
+	 */
+	public void toJson(final Object object, final Writer out,
+			final Prettiness level) throws IOException {
+		SERIALIZATION_PROCESSOR.serializeTo(object, out, converter,
+				level == null ? null : level.newContext());
+	}
+
+	/**
+	 * Serialize to JSON/R ({@link Prettiness#COMPACT compact} string)
+	 *
+	 * @param object
+	 *            the object to serialize
+	 * @param out
+	 *            the stream to write to
+	 * @throws IOException
+	 *             on I/O exception
+	 */
+	public void toJson(final Object object, final Writer out)
+			throws IOException {
+		toJson(object, out, null);
 	}
 
 	/**
@@ -105,6 +143,38 @@ public class JsonSerializer {
 	}
 
 	/**
+	 * Deserialize from JSON/R to the most appropriate type
+	 *
+	 * @param jsonR
+	 *            the JSON/R string
+	 * @return the object
+	 * @throws IOException
+	 *             on I/O exception
+	 */
+	public Object fromJson(final Reader jsonR) throws IOException {
+		return DESERIALIZATION_PROCESSOR.deserialize(jsonR, converter, null);
+	}
+
+	/**
+	 * Deserialize from JSON/R to the given type
+	 *
+	 * @param jsonR
+	 *            the JSON/R string
+	 * @param wantedType
+	 *            the wanted type
+	 * @param <T>
+	 *            the type of the object to return
+	 * @return the object
+	 * @throws IOException
+	 *             on I/O exception
+	 */
+	public <T> T fromJson(final Reader jsonR,
+			final Class<? extends T> wantedType) throws IOException {
+		return DESERIALIZATION_PROCESSOR.deserialize(jsonR, converter,
+				wantedType);
+	}
+
+	/**
 	 * Clone an object using JSON/R
 	 *
 	 * @param object
@@ -116,7 +186,7 @@ public class JsonSerializer {
 	public <T> T clone(final T object) {
 		@SuppressWarnings("unchecked")
 		final Class<? extends T> wantedType = (Class<? extends T>) object
-				.getClass();
+		.getClass();
 		return fromJson(toJson(object), wantedType);
 	}
 

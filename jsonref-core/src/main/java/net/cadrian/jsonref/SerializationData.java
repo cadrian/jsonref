@@ -15,6 +15,9 @@
  */
 package net.cadrian.jsonref;
 
+import java.io.IOException;
+import java.io.Writer;
+
 import net.cadrian.jsonref.Prettiness.Context;
 
 /**
@@ -27,14 +30,17 @@ public interface SerializationData {
 	/**
 	 * Serialization
 	 *
-	 * @param result
-	 *            the JSON/R string to append to
+	 * @param out
+	 *            the JSON/R stream to append to
 	 * @param converter
 	 *            the converter
 	 * @param context
 	 *            the prettiness context
+	 * @throws IOException
+	 *             on I/O exception
 	 */
-	void toJson(StringBuilder result, JsonConverter converter, Context context);
+	void toJson(Writer out, JsonConverter converter, Context context)
+			throws IOException;
 
 	/**
 	 * Deserialization

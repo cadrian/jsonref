@@ -15,6 +15,8 @@
  */
 package net.cadrian.jsonref.data;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,78 +54,77 @@ public class SerializationMap extends AbstractSerializationObject {
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
 	 */
 	@Override
-	public void toJson(final StringBuilder result,
-			final JsonConverter converter, final Context context) {
+	public void toJson(final Writer out, final JsonConverter converter,
+			final Context context) throws IOException {
 		if (isMapOfStrings) {
-			toJsonMap(result, converter, context);
+			toJsonMap(out, converter, context);
 		} else {
-			toJsonArray(result, converter, context);
+			toJsonArray(out, converter, context);
 		}
 	}
 
-	private void toJsonMap(final StringBuilder result,
-			final JsonConverter converter, final Context context) {
-		result.append('{');
+	private void toJsonMap(final Writer out, final JsonConverter converter,
+			final Context context) throws IOException {
+		out.append('{');
 		context.toJson(
-				result,
+				out,
 				map.entrySet(),
 				new Serializer<Map.Entry<SerializationData, SerializationData>>() {
 					@Override
 					public void toJson(
-							final StringBuilder result,
+							final Writer out,
 							final Entry<SerializationData, SerializationData> value,
-							final Prettiness level) {
-						value.getKey().toJson(result, converter, context);
-						result.append(':');
+							final Prettiness level) throws IOException {
+						value.getKey().toJson(out, converter, context);
+						out.append(':');
 						if (context.getPrettiness() != Prettiness.COMPACT) {
-							result.append(' ');
+							out.append(' ');
 						}
-						value.getValue().toJson(result, converter, context);
+						value.getValue().toJson(out, converter, context);
 					}
 				});
-		result.append('}');
+		out.append('}');
 	}
 
-	private void toJsonArray(final StringBuilder result,
-			final JsonConverter converter, final Context context) {
-		result.append('[');
+	private void toJsonArray(final Writer out, final JsonConverter converter,
+			final Context context) throws IOException {
+		out.append('[');
 		context.toJson(
-				result,
+				out,
 				map.entrySet(),
 				new Serializer<Map.Entry<SerializationData, SerializationData>>() {
 					@Override
 					public void toJson(
-							final StringBuilder result,
+							final Writer out,
 							final Entry<SerializationData, SerializationData> value,
-							final Prettiness level) {
-						result.append('[');
+							final Prettiness level) throws IOException {
+						out.append('[');
 						context.toJson(
-								result,
+								out,
 								Arrays.asList(value.getKey(), value.getValue()),
 								new Serializer<SerializationData>() {
 									@Override
-									public void toJson(
-											final StringBuilder result,
+									public void toJson(final Writer out,
 											final SerializationData value,
-											final Prettiness level) {
-										value.toJson(result, converter, context);
+											final Prettiness level)
+											throws IOException {
+										value.toJson(out, converter, context);
 									}
 								});
-						result.append(']');
+						out.append(']');
 					}
 				});
-		result.append(']');
+		out.append(']');
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
@@ -138,7 +139,7 @@ public class SerializationMap extends AbstractSerializationObject {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.data.AbstractSerializationObject#getType()
 	 */
 	@Override
@@ -148,7 +149,7 @@ public class SerializationMap extends AbstractSerializationObject {
 
 	/**
 	 * Add an object into the map
-	 * 
+	 *
 	 * @param key
 	 *            the object key
 	 * @param value

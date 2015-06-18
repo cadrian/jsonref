@@ -15,6 +15,8 @@
  */
 package net.cadrian.jsonref.data;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,31 +70,30 @@ public class SerializationHeap extends AbstractSerializationData {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 *
+	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
 	 */
 	@Override
-	public void toJson(final StringBuilder result,
-			final JsonConverter converter, final Context context) {
+	public void toJson(final Writer out, final JsonConverter converter,
+			final Context context) throws IOException {
 		final int n = heap.size();
 		assert n > 0 : "empty heap?!";
 		if (n == 1) {
-			heap.get(0).toJson(result, converter, context);
+			heap.get(0).toJson(out, converter, context);
 		} else {
-			result.append('<');
-			context.toJson(result, heap,
+			out.append('<');
+			context.toJson(out, heap,
 					new Serializer<AbstractSerializationObject>() {
-				@Override
-				public void toJson(final StringBuilder result,
-						final AbstractSerializationObject value,
-						final Prettiness level) {
-					value.toJson(result, converter, context);
-				}
-			});
-			result.append('>');
+						@Override
+						public void toJson(final Writer out,
+								final AbstractSerializationObject value,
+								final Prettiness level) throws IOException {
+							value.toJson(out, converter, context);
+						}
+					});
+			out.append('>');
 		}
 	}
 
@@ -104,7 +105,7 @@ public class SerializationHeap extends AbstractSerializationData {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,

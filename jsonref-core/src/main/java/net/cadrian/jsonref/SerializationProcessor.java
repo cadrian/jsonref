@@ -19,6 +19,8 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -109,27 +111,53 @@ class SerializationProcessor {
 	 * @return the serialized object
 	 */
 	public String serialize(final Object value, final JsonConverter converter,
-			Context context) {
-		if (value == null) {
-			return "null";
-		}
-		if (context == null) {
-			context = Prettiness.COMPACT.newContext();
-		}
-
-		final StringBuilder result = new StringBuilder();
-		final Map<ObjectReference, ObjectReference> refs = new HashMap<>();
-
-		final SerializationData data = getData(null, refs, value,
-				value.getClass(), converter);
-		if (data != null) {
-			data.toJson(result, converter, context);
-		} else {
-			final SerializationHeap heap = new SerializationHeap();
-			getData(heap, refs, value, value.getClass(), converter);
-			heap.toJson(result, converter, context);
+			final Context context) {
+		final StringBuilderWriter result = new StringBuilderWriter();
+		try {
+			serializeTo(value, result, converter, context);
+		} catch (final IOException e) {
+			// should not happen anyway
+			throw new RuntimeException(e);
 		}
 		return result.toString();
+	}
+
+	/**
+	 * Serialize an object graph to JSON/R
+	 *
+	 * @param value
+	 *            the object to serialize
+	 * @param out
+	 *            the stream to write to
+	 * @param converter
+	 *            the converter
+	 * @param context
+	 *            the prettiness level
+	 * @return the serialized object
+	 * @throws IOException
+	 *             on exception
+	 */
+	public void serializeTo(final Object value, final Writer out,
+			final JsonConverter converter, Context context) throws IOException {
+		if (value == null) {
+			out.write("null");
+		} else {
+			if (context == null) {
+				context = Prettiness.COMPACT.newContext();
+			}
+
+			final Map<ObjectReference, ObjectReference> refs = new HashMap<>();
+
+			final SerializationData data = getData(null, refs, value,
+					value.getClass(), converter);
+			if (data != null) {
+				data.toJson(out, converter, context);
+			} else {
+				final SerializationHeap heap = new SerializationHeap();
+				getData(heap, refs, value, value.getClass(), converter);
+				heap.toJson(out, converter, context);
+			}
+		}
 	}
 
 	private SerializationData getData(final SerializationHeap heap,

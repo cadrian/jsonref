@@ -19,6 +19,8 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -72,31 +74,30 @@ public class SerializationObject extends AbstractSerializationObject {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.cadrian.jsonref.SerializationData#toJson(java.lang.StringBuilder,
+	 *
+	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
 	 */
 	@Override
-	public void toJson(final StringBuilder result,
-			final JsonConverter converter, final Context context) {
-		result.append('{');
+	public void toJson(final Writer out, final JsonConverter converter,
+			final Context context) throws IOException {
+		out.append('{');
 		String sep = "";
 		for (final Map.Entry<String, AbstractSerializationData> value : properties
 				.entrySet()) {
-			result.append(sep);
-			result.append(converter.toJson(value.getKey()));
-			result.append(':');
-			value.getValue().toJson(result, converter, context);
+			out.append(sep);
+			out.append(converter.toJson(value.getKey()));
+			out.append(':');
+			value.getValue().toJson(out, converter, context);
 			sep = ",";
 		}
-		result.append('}');
+		out.append('}');
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
@@ -129,7 +130,7 @@ public class SerializationObject extends AbstractSerializationObject {
 
 		@SuppressWarnings("rawtypes")
 		final Map<Object, Object> result = (Map<Object, Object>) converter
-				.newMap((Class<Map>) propertyType);
+		.newMap((Class<Map>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}

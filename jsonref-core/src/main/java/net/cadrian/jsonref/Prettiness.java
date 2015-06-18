@@ -15,6 +15,8 @@
  */
 package net.cadrian.jsonref;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Collection;
 
 /**
@@ -27,12 +29,13 @@ public enum Prettiness {
 	 */
 	COMPACT {
 		@Override
-		<T> void toJson(final StringBuilder result, final Collection<T> values,
-				final Serializer<T> serializer, final Context context) {
+		<T> void toJson(final Writer out, final Collection<T> values,
+				final Serializer<T> serializer, final Context context)
+				throws IOException {
 			String sep = "";
 			for (final T value : values) {
-				result.append(sep);
-				serializer.toJson(result, value, this);
+				out.append(sep);
+				serializer.toJson(out, value, this);
 				sep = ",";
 			}
 		}
@@ -48,12 +51,13 @@ public enum Prettiness {
 	 */
 	LEGIBLE {
 		@Override
-		<T> void toJson(final StringBuilder result, final Collection<T> values,
-				final Serializer<T> serializer, final Context context) {
+		<T> void toJson(final Writer out, final Collection<T> values,
+				final Serializer<T> serializer, final Context context)
+				throws IOException {
 			String sep = "";
 			for (final T value : values) {
-				result.append(sep);
-				serializer.toJson(result, value, this);
+				out.append(sep);
+				serializer.toJson(out, value, this);
 				sep = ", ";
 			}
 		}
@@ -70,19 +74,20 @@ public enum Prettiness {
 	 */
 	INDENTED {
 		@Override
-		<T> void toJson(final StringBuilder result, final Collection<T> values,
-				final Serializer<T> serializer, final Context context) {
+		<T> void toJson(final Writer out, final Collection<T> values,
+				final Serializer<T> serializer, final Context context)
+						throws IOException {
 			final IndentationContext iContext = (IndentationContext) context;
 			iContext.more();
 			String sep = "";
 			for (final T value : values) {
-				result.append(sep);
-				iContext.indent(result);
-				serializer.toJson(result, value, this);
+				out.append(sep);
+				iContext.indent(out);
+				serializer.toJson(out, value, this);
 				sep = ",";
 			}
 			iContext.less();
-			iContext.indent(result);
+			iContext.indent(out);
 		}
 
 		@Override
@@ -98,7 +103,7 @@ public enum Prettiness {
 	 *            the type of the serialized objects
 	 */
 	public static interface Serializer<T> {
-		void toJson(StringBuilder result, T value, Prettiness level);
+		void toJson(Writer out, T value, Prettiness level) throws IOException;
 	}
 
 	/**
@@ -111,17 +116,19 @@ public enum Prettiness {
 		/**
 		 * Serialize a collection to JSON/R
 		 *
-		 * @param result
-		 *            the JSON/R string to append to
+		 * @param out
+		 *            the JSON/R stream to append to
 		 * @param values
 		 *            the values to serialize
 		 * @param serializer
 		 *            used to serialize each value
 		 * @param <T>
 		 *            the type of the values in the collection
+		 * @param IOException
+		 *            on I/O exception
 		 */
-		public <T> void toJson(final StringBuilder result,
-				final Collection<T> values, Serializer<T> serializer);
+		public <T> void toJson(final Writer out, final Collection<T> values,
+				Serializer<T> serializer) throws IOException;
 	}
 
 	private static class PrettinessContext implements Context {
@@ -137,9 +144,9 @@ public enum Prettiness {
 		}
 
 		@Override
-		public <T> void toJson(final StringBuilder result,
-				final Collection<T> values, final Serializer<T> serializer) {
-			prettiness.toJson(result, values, serializer, this);
+		public <T> void toJson(final Writer out, final Collection<T> values,
+				final Serializer<T> serializer) throws IOException {
+			prettiness.toJson(out, values, serializer, this);
 		}
 	}
 
@@ -150,10 +157,10 @@ public enum Prettiness {
 			super(prettiness);
 		}
 
-		void indent(final StringBuilder result) {
-			result.append('\n');
+		void indent(final Writer out) throws IOException {
+			out.append('\n');
 			for (int i = 0; i < indent; i++) {
-				result.append("    ");
+				out.append("    ");
 			}
 		}
 
@@ -172,7 +179,6 @@ public enum Prettiness {
 	 */
 	public abstract Context newContext();
 
-	abstract <T> void toJson(final StringBuilder result,
-			final Collection<T> values, Serializer<T> serializer,
-			Context context);
+	abstract <T> void toJson(final Writer out, final Collection<T> values,
+			Serializer<T> serializer, Context context) throws IOException;
 }

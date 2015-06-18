@@ -15,6 +15,8 @@
  */
 package net.cadrian.jsonref;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,56 +35,19 @@ class DeserializationProcessor {
 
 	private static final char[] CONST_NULL = new char[] { 'n', 'u', 'l', 'l' };
 	private static final char[] CONST_FALSE = new char[] { 'f', 'a', 'l', 's',
-	'e' };
+			'e' };
 	private static final char[] CONST_TRUE = new char[] { 't', 'r', 'u', 'e' };
 
-	private static class DeserializationContext {
-		private final char[] chars;
-		private int index;
-		private int ref;
+	static class ParseException extends RuntimeException {
 
-		DeserializationContext(final String jsonR) {
-			chars = jsonR.toCharArray();
-			index = 0;
-		}
-
-		void next() {
-			index++;
-		}
-
-		void skipSpaces() {
-			while (isValid() && Character.isWhitespace(get())) {
-				next();
-			}
-		}
-
-		boolean isValid() {
-			return index < chars.length;
-		}
-
-		char get() {
-			return chars[index];
-		}
-
-		int getIndex() {
-			return index;
-		}
-
-		public int getRef() {
-			return ref;
-		}
-
-		public void setRef(final int ref) {
-			this.ref = ref;
-		}
-
-	}
-
-	private static class ParseException extends RuntimeException {
-		private static final long serialVersionUID = 6155459663107862353L;
+		private static final long serialVersionUID = 3557835262164012536L;
 
 		ParseException(final String msg) {
 			super(msg);
+		}
+
+		public ParseException(final Throwable t) {
+			super(t);
 		}
 	}
 
@@ -92,12 +57,38 @@ class DeserializationProcessor {
 	 * @param jsonR
 	 *            the JSON/R object graph
 	 * @param converter
-	 *            the Javers converter
+	 *            the converter
 	 * @return the Java object
 	 */
 	public <T> T deserialize(final String jsonR, final JsonConverter converter,
 			final Class<? extends T> wantedType) {
-		final DeserializationContext context = new DeserializationContext(jsonR);
+		final DeserializationContext context = new StringDeserializationContext(
+				jsonR);
+		SerializationData data;
+		try {
+			data = parse(context, converter);
+		} catch (final IOException e) {
+			// should not happen anyway
+			throw new RuntimeException(e);
+		}
+		return data.fromJson(wantedType, converter);
+	}
+
+	/**
+	 * Deserialize a JSON/R object graph back to Java objects
+	 *
+	 * @param jsonR
+	 *            the JSON/R object graph
+	 * @param converter
+	 *            the converter
+	 * @return the Java object
+	 * @throws IOException
+	 *             on I/O exception
+	 */
+	public <T> T deserialize(final Reader jsonR, final JsonConverter converter,
+			final Class<? extends T> wantedType) throws IOException {
+		final DeserializationContext context = new StreamDeserializationContext(
+				jsonR);
 		final SerializationData data = parse(context, converter);
 		return data.fromJson(wantedType, converter);
 	}
@@ -110,9 +101,11 @@ class DeserializationProcessor {
 	 * @param converter
 	 *            the converter
 	 * @return the serialization data
+	 * @throws IOException
+	 *             on exception
 	 */
 	private SerializationData parse(final DeserializationContext context,
-			final JsonConverter converter) {
+			final JsonConverter converter) throws IOException {
 		SerializationData result = null;
 		context.skipSpaces();
 		if (context.isValid()) {
@@ -154,7 +147,7 @@ class DeserializationProcessor {
 	}
 
 	private SerializationHeap parseHeap(final DeserializationContext context,
-			final JsonConverter converter) {
+			final JsonConverter converter) throws IOException {
 		final List<SerializationData> dataList = parseDataList(context, "heap",
 				'<', '>', converter);
 		final SerializationHeap result = new SerializationHeap();
@@ -165,7 +158,8 @@ class DeserializationProcessor {
 	}
 
 	private SerializationObject parseObject(
-			final DeserializationContext context, final JsonConverter converter) {
+			final DeserializationContext context, final JsonConverter converter)
+			throws IOException {
 		assert context.isValid() && context.get() == '{' : "unexpected character";
 
 		final SerializationObject result = new SerializationObject(null,
@@ -192,7 +186,7 @@ class DeserializationProcessor {
 				if (result.contains(property)) {
 					throw new ParseException(
 							"invalid object: duplicated property \"" + property
-							+ "\" at " + context.getIndex());
+									+ "\" at " + context.getIndex());
 				}
 				state = 2;
 				break;
@@ -234,7 +228,7 @@ class DeserializationProcessor {
 	}
 
 	private SerializationArray parseArray(final DeserializationContext context,
-			final JsonConverter converter) {
+			final JsonConverter converter) throws IOException {
 		final List<SerializationData> dataList = parseDataList(context,
 				"array", '[', ']', converter);
 		final SerializationArray result = new SerializationArray(
@@ -247,7 +241,8 @@ class DeserializationProcessor {
 
 	private List<SerializationData> parseDataList(
 			final DeserializationContext context, final String type,
-			final char open, final char close, final JsonConverter converter) {
+			final char open, final char close, final JsonConverter converter)
+			throws IOException {
 		assert context.isValid() && context.get() == open : "unexpected character";
 		assert close == ']' || close == '>' : "bad close character";
 
@@ -297,7 +292,8 @@ class DeserializationProcessor {
 		return dataList;
 	}
 
-	private SerializationRef parseReference(final DeserializationContext context) {
+	private SerializationRef parseReference(final DeserializationContext context)
+			throws IOException {
 		assert context.isValid() && context.get() == '$' : "unexpected character";
 
 		final StringBuilder value = new StringBuilder();
@@ -313,11 +309,13 @@ class DeserializationProcessor {
 		return new SerializationRef(Integer.parseInt(value.toString()));
 	}
 
-	private SerializationValue parseString(final DeserializationContext context) {
+	private SerializationValue parseString(final DeserializationContext context)
+			throws IOException {
 		return new SerializationValue(parseString0(context));
 	}
 
-	private String parseString0(final DeserializationContext context) {
+	private String parseString0(final DeserializationContext context)
+			throws IOException {
 		assert context.isValid() && context.get() == '"' : "unexpected character";
 
 		int state = 1;
@@ -351,23 +349,24 @@ class DeserializationProcessor {
 	}
 
 	private SerializationValue parseConst(final DeserializationContext context,
-			final char[] string, final String object) {
+			final char[] string, final String object) throws IOException {
 		assert string.length > 0 && context.isValid()
-		&& context.get() == string[0] : "unexpected character";
+				&& context.get() == string[0] : "unexpected character";
 
 		for (int i = 0; i < string.length; i++) {
 			if (!context.isValid() || context.get() != string[i]) {
 				throw new ParseException(
 						"invalid const, unexpected character '" + context.get()
-						+ "' instead of '" + string[i] + "' at "
-						+ context.getIndex());
+								+ "' instead of '" + string[i] + "' at "
+								+ context.getIndex());
 			}
 			context.next();
 		}
 		return new SerializationValue(object);
 	}
 
-	private SerializationValue parseNumber(final DeserializationContext context) {
+	private SerializationValue parseNumber(final DeserializationContext context)
+			throws IOException {
 		assert context.isValid() && Character.isDigit(context.get()) : "unexpected character";
 
 		final StringBuilder value = new StringBuilder();
