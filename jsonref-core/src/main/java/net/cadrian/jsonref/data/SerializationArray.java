@@ -57,7 +57,7 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
@@ -82,19 +82,25 @@ public class SerializationArray extends AbstractSerializationObject {
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
-	 * net.cadrian.jsonref.JsonConverter)
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		final T result;
 		if (propertyType == null
 				|| Collection.class.isAssignableFrom(propertyType)) {
-			result = fromJsonCollection(heap, propertyType, converter);
+			result = fromJsonCollection(heap, propertyType, converter,
+					converterContext);
 		} else if (propertyType.isArray()) {
-			result = fromJsonArray(heap, propertyType, converter);
+			result = fromJsonArray(heap, propertyType, converter,
+					converterContext);
 		} else if (Map.class.isAssignableFrom(propertyType)) {
-			result = fromJsonMap(heap, propertyType, converter);
+			result = fromJsonMap(heap, propertyType, converter,
+					converterContext);
 		} else {
 			throw new SerializationException("not array compatible");
 		}
@@ -103,7 +109,9 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonArray(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		assert propertyType.isArray() : "not an array";
 
 		final Class<?> componentType = propertyType.getComponentType();
@@ -116,7 +124,8 @@ public class SerializationArray extends AbstractSerializationObject {
 		for (int i = 0; i < n; i++) {
 			final AbstractSerializationData data = (AbstractSerializationData) array
 					.get(i);
-			Array.set(result, i, data.fromJson(heap, componentType, converter));
+			Array.set(result, i, data.fromJson(heap, componentType, converter,
+					converterContext));
 		}
 
 		return (T) result;
@@ -124,40 +133,44 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonCollection(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		assert propertyType == null
 				|| Collection.class.isAssignableFrom(propertyType) : "not a collection";
 
-				@SuppressWarnings("rawtypes")
-				final Collection<Object> result = (Collection<Object>) converter
+		@SuppressWarnings("rawtypes")
+		final Collection<Object> result = (Collection<Object>) converter
 				.newCollection((Class<Collection>) propertyType);
-				if (heap != null) {
-					heap.setDeser(ref, result);
-				}
+		if (heap != null) {
+			heap.setDeser(ref, result);
+		}
 
-				for (final SerializationData data : array) {
-					result.add(((AbstractSerializationData) data).fromJson(heap, null,
-							converter));
-				}
+		for (final SerializationData data : array) {
+			result.add(((AbstractSerializationData) data).fromJson(heap, null,
+					converter, converterContext));
+		}
 
-				return (T) result;
+		return (T) result;
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonMap(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		assert Map.class.isAssignableFrom(propertyType) : "not a map";
 
 		@SuppressWarnings("rawtypes")
 		final Map<Object, Object> result = (Map<Object, Object>) converter
-		.newMap((Class<Map>) propertyType);
+				.newMap((Class<Map>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}
 
 		for (final SerializationData data : array) {
 			final Object entry = ((AbstractSerializationData) data).fromJson(
-					heap, null, converter);
+					heap, null, converter, converterContext);
 			if (entry instanceof Collection<?>) {
 				final Collection<Object> entrycoll = (Collection<Object>) entry;
 				if (entrycoll.size() != 2) {
@@ -180,7 +193,7 @@ public class SerializationArray extends AbstractSerializationObject {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.cadrian.jsonref.data.AbstractSerializationObject#getType()
 	 */
 	@Override

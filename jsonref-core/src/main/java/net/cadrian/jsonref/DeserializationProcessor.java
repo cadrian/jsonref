@@ -35,7 +35,7 @@ class DeserializationProcessor {
 
 	private static final char[] CONST_NULL = new char[] { 'n', 'u', 'l', 'l' };
 	private static final char[] CONST_FALSE = new char[] { 'f', 'a', 'l', 's',
-			'e' };
+	'e' };
 	private static final char[] CONST_TRUE = new char[] { 't', 'r', 'u', 'e' };
 
 	static class ParseException extends RuntimeException {
@@ -64,6 +64,8 @@ class DeserializationProcessor {
 			final Class<? extends T> wantedType) {
 		final DeserializationContext context = new StringDeserializationContext(
 				jsonR);
+		final JsonConverter.Context converterContext = converter
+				.getNewContext();
 		SerializationData data;
 		try {
 			data = parse(context, converter);
@@ -71,7 +73,7 @@ class DeserializationProcessor {
 			// should not happen anyway
 			throw new RuntimeException(e);
 		}
-		return data.fromJson(wantedType, converter);
+		return data.fromJson(wantedType, converter, converterContext);
 	}
 
 	/**
@@ -89,8 +91,10 @@ class DeserializationProcessor {
 			final Class<? extends T> wantedType) throws IOException {
 		final DeserializationContext context = new StreamDeserializationContext(
 				jsonR);
+		final JsonConverter.Context converterContext = converter
+				.getNewContext();
 		final SerializationData data = parse(context, converter);
-		return data.fromJson(wantedType, converter);
+		return data.fromJson(wantedType, converter, converterContext);
 	}
 
 	/**
@@ -159,7 +163,7 @@ class DeserializationProcessor {
 
 	private SerializationObject parseObject(
 			final DeserializationContext context, final JsonConverter converter)
-			throws IOException {
+					throws IOException {
 		assert context.isValid() && context.get() == '{' : "unexpected character";
 
 		final SerializationObject result = new SerializationObject(null,
@@ -186,7 +190,7 @@ class DeserializationProcessor {
 				if (result.contains(property)) {
 					throw new ParseException(
 							"invalid object: duplicated property \"" + property
-									+ "\" at " + context.getIndex());
+							+ "\" at " + context.getIndex());
 				}
 				state = 2;
 				break;
@@ -242,7 +246,7 @@ class DeserializationProcessor {
 	private List<SerializationData> parseDataList(
 			final DeserializationContext context, final String type,
 			final char open, final char close, final JsonConverter converter)
-			throws IOException {
+					throws IOException {
 		assert context.isValid() && context.get() == open : "unexpected character";
 		assert close == ']' || close == '>' : "bad close character";
 
@@ -351,14 +355,14 @@ class DeserializationProcessor {
 	private SerializationValue parseConst(final DeserializationContext context,
 			final char[] string, final String object) throws IOException {
 		assert string.length > 0 && context.isValid()
-				&& context.get() == string[0] : "unexpected character";
+		&& context.get() == string[0] : "unexpected character";
 
 		for (int i = 0; i < string.length; i++) {
 			if (!context.isValid() || context.get() != string[i]) {
 				throw new ParseException(
 						"invalid const, unexpected character '" + context.get()
-								+ "' instead of '" + string[i] + "' at "
-								+ context.getIndex());
+						+ "' instead of '" + string[i] + "' at "
+						+ context.getIndex());
 			}
 			context.next();
 		}

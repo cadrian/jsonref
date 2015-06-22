@@ -47,7 +47,7 @@ public class SerializationRef extends AbstractSerializationData {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
@@ -60,18 +60,22 @@ public class SerializationRef extends AbstractSerializationData {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
-	 * net.cadrian.jsonref.JsonConverter)
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final net.cadrian.jsonref.JsonConverter.Context converterContext) {
 		assert heap != null : "no heap for reference?!";
 
-		return heap.get(ref).fromJson(heap, propertyType, converter);
+		return heap.get(ref).fromJson(heap, propertyType, converter,
+				converterContext);
 	}
 
 }

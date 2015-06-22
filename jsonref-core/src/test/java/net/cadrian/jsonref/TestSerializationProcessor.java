@@ -172,7 +172,7 @@ public class TestSerializationProcessor {
 		assertTrue(jsonIndented
 				.equals("[\n    [\n        1,\n        now\n    ],\n    [\n        2,\n        string\n    ]\n]")
 				|| jsonIndented
-				.equals("[\n    [\n        2,\n        string\n    ],\n    [\n        1,\n        now\n    ]\n]"));
+						.equals("[\n    [\n        2,\n        string\n    ],\n    [\n        1,\n        now\n    ]\n]"));
 	}
 
 }

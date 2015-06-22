@@ -15,6 +15,7 @@
  */
 package net.cadrian.jsonref;
 
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
@@ -24,8 +25,19 @@ import java.util.Map;
  */
 public interface JsonConverter {
 
+	public static interface Context {
+		// empty by default
+	}
+
 	/**
-	 * Convert the value to a valid JSON string
+	 * Get a new context to be passed around during the serialization
+	 *
+	 * @return the new context
+	 */
+	Context getNewContext();
+
+	/**
+	 * Convert the atomic value to a valid JSON string
 	 *
 	 * @param value
 	 *            the value
@@ -34,7 +46,7 @@ public interface JsonConverter {
 	String toJson(Object value);
 
 	/**
-	 * Convert the JSON string to an object
+	 * Convert the JSON string to an atomic value
 	 *
 	 * @param string
 	 *            the JSON string
@@ -78,11 +90,99 @@ public interface JsonConverter {
 	/**
 	 * Transient fields are not serialized.
 	 *
-	 * @param field
+	 * @param pd
+	 *            the property descriptor
+	 * @param propertyField
 	 *            the field to check
+	 * @param context
+	 *            the serialization context
 	 * @return <code>true</code> if the field is transient (i.e. not to be
 	 *         serialized), <code>false</code> otherwise
 	 */
-	boolean isTransient(Field field);
+	boolean isTransient(PropertyDescriptor pd, Field propertyField,
+			Context context);
+
+	/**
+	 * Get the value of the property
+	 *
+	 * @param pd
+	 *            the property descriptor
+	 * @param object
+	 *            the object to get the value from
+	 * @param context
+	 *            the serialization context
+	 * @return the value
+	 */
+	Object getPropertyValue(PropertyDescriptor pd, Object object,
+			Context context);
+
+	/**
+	 * Set the value of the property
+	 *
+	 * @param pd
+	 *            the property descriptor
+	 * @param object
+	 *            the object to set the value to
+	 * @param value
+	 *            the value to set
+	 * @param context
+	 *            the serialization context
+	 */
+	void setPropertyValue(PropertyDescriptor pd, Object object, Object value,
+			Context context);
+
+	/**
+	 * Get the type of the value of the property
+	 *
+	 * @param pd
+	 *            the property descriptor
+	 * @param propertyField
+	 *            the property actual field
+	 * @param context
+	 *            the serialization context
+	 * @return the type of the property
+	 */
+	Class<?> getPropertyType(PropertyDescriptor pd, Field propertyField,
+			Context context);
+
+	/**
+	 * Start de/serializing given property
+	 *
+	 * @param pd
+	 *            the property descriptor
+	 * @param propertyField
+	 *            the property actual field
+	 * @param object
+	 *            the property holder
+	 * @param value
+	 *            the valued returned by
+	 *            {@link #getPropertyValue(PropertyDescriptor, Object, Context)}
+	 *            (for serialization), or <code>null</code> (for
+	 *            deserialization)
+	 * @param context
+	 *            the serialization context
+	 */
+	void nestIn(PropertyDescriptor pd, Field propertyField, Object object,
+			Object value, net.cadrian.jsonref.JsonConverter.Context context);
+
+	/**
+	 * Finishes de/serializing given property
+	 *
+	 * @param pd
+	 *            the property descriptor
+	 * @param propertyField
+	 *            the property actual field
+	 * @param object
+	 *            the property holder
+	 * @param value
+	 *            the valued returned by
+	 *            {@link #getPropertyValue(PropertyDescriptor, Object, Context)}
+	 *            (for deserialization), or build using
+	 *            {@link #fromJson(String, Class)} (for deserialization)
+	 * @param context
+	 *            the serialization context
+	 */
+	void nestOut(PropertyDescriptor pd, Field propertyField, Object object,
+			Object value, net.cadrian.jsonref.JsonConverter.Context context);
 
 }

@@ -49,9 +49,12 @@ public interface SerializationData {
 	 *            the type of the object to deserialize
 	 * @param converter
 	 *            the converter
+	 * @param converterContext
+	 *            the converter context
 	 * @param <T>
 	 *            the type of the object to return
 	 * @return the actual deserialized object
 	 */
-	<T> T fromJson(Class<? extends T> wantedType, JsonConverter converter);
+	<T> T fromJson(Class<? extends T> wantedType, JsonConverter converter,
+			net.cadrian.jsonref.JsonConverter.Context converterContext);
 }

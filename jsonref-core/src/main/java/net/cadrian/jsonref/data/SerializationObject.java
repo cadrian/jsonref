@@ -21,8 +21,7 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -74,7 +73,7 @@ public class SerializationObject extends AbstractSerializationObject {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
@@ -97,15 +96,18 @@ public class SerializationObject extends AbstractSerializationObject {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
-	 * net.cadrian.jsonref.JsonConverter)
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final net.cadrian.jsonref.JsonConverter.Context converterContext) {
 		T result = null;
 		if (heap != null) {
 			@SuppressWarnings("unchecked")
@@ -115,9 +117,11 @@ public class SerializationObject extends AbstractSerializationObject {
 		if (result == null) {
 			if (propertyType != null
 					&& Map.class.isAssignableFrom(propertyType)) {
-				result = fromJsonMap(heap, propertyType, converter);
+				result = fromJsonMap(heap, propertyType, converter,
+						converterContext);
 			} else {
-				result = fromJsonObject(heap, propertyType, converter);
+				result = fromJsonObject(heap, propertyType, converter,
+						converterContext);
 			}
 		}
 		return result;
@@ -125,12 +129,14 @@ public class SerializationObject extends AbstractSerializationObject {
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonMap(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		assert Map.class.isAssignableFrom(propertyType) : "not a map";
 
 		@SuppressWarnings("rawtypes")
 		final Map<Object, Object> result = (Map<Object, Object>) converter
-		.newMap((Class<Map>) propertyType);
+				.newMap((Class<Map>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}
@@ -139,7 +145,7 @@ public class SerializationObject extends AbstractSerializationObject {
 				.entrySet()) {
 			final String key = entry.getKey();
 			final Object value = entry.getValue().fromJson(heap, null,
-					converter);
+					converter, converterContext);
 			result.put(key, value);
 		}
 		return (T) result;
@@ -147,7 +153,9 @@ public class SerializationObject extends AbstractSerializationObject {
 
 	@SuppressWarnings("unchecked")
 	private <T> T fromJsonObject(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		final T result;
 
 		try {
@@ -158,7 +166,7 @@ public class SerializationObject extends AbstractSerializationObject {
 				final AbstractSerializationData classProperty = properties
 						.get("class");
 				final String className = classProperty.fromJson(heap,
-						String.class, converter);
+						String.class, converter, converterContext);
 				actualType = Class.forName(className);
 			}
 
@@ -173,18 +181,24 @@ public class SerializationObject extends AbstractSerializationObject {
 			for (final PropertyDescriptor pd : pds) {
 				final String propertyName = pd.getName();
 				if (properties.containsKey(propertyName)) {
-					final Method writer = pd.getWriteMethod();
-					if (writer != null) {
-						writer.invoke(
-								result,
-								properties.get(propertyName).fromJson(heap,
-										pd.getPropertyType(), converter));
+					final Field propertyField = getField(propertyName,
+							propertyType);
+					if (!converter.isTransient(pd, propertyField,
+							converterContext)) {
+						converter.nestIn(pd, propertyField, result, null,
+								converterContext);
+						final Object value = properties.get(propertyName)
+								.fromJson(heap, pd.getPropertyType(),
+										converter, converterContext);
+						converter.setPropertyValue(pd, result, value,
+								converterContext);
+						converter.nestOut(pd, propertyField, result, value,
+								converterContext);
 					}
 				}
 			}
 		} catch (final ClassNotFoundException | InstantiationException
-				| IllegalAccessException | IntrospectionException
-				| IllegalArgumentException | InvocationTargetException e) {
+				| IllegalAccessException | IntrospectionException e) {
 			throw new SerializationException(e);
 		}
 

@@ -29,6 +29,10 @@ import net.cadrian.jsonref.Prettiness.Serializer;
  * The heap represents a list of objects known by their reference (which is
  * their index into the list)
  */
+/**
+ * @author E451177
+ *
+ */
 public class SerializationHeap extends AbstractSerializationData {
 
 	private final List<AbstractSerializationObject> heap = new ArrayList<>();
@@ -70,7 +74,7 @@ public class SerializationHeap extends AbstractSerializationData {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
@@ -86,35 +90,48 @@ public class SerializationHeap extends AbstractSerializationData {
 			out.append('<');
 			context.toJson(out, heap,
 					new Serializer<AbstractSerializationObject>() {
-						@Override
-						public void toJson(final Writer out,
-								final AbstractSerializationObject value,
-								final Prettiness level) throws IOException {
-							value.toJson(out, converter, context);
-						}
-					});
+				@Override
+				public void toJson(final Writer out,
+						final AbstractSerializationObject value,
+						final Prettiness level) throws IOException {
+					value.toJson(out, converter, context);
+				}
+			});
 			out.append('>');
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(java.lang
+	 * .Class, net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
+	 */
 	@Override
 	public <T> T fromJson(final Class<? extends T> wantedType,
-			final JsonConverter converter) {
-		return heap.get(0).fromJson(this, wantedType, converter);
+			final JsonConverter converter,
+			final net.cadrian.jsonref.JsonConverter.Context converterContext) {
+		return heap.get(0).fromJson(this, wantedType, converter,
+				converterContext);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
-	 * net.cadrian.jsonref.JsonConverter)
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
-		return fromJson(propertyType, converter);
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final net.cadrian.jsonref.JsonConverter.Context converterContext) {
+		return fromJson(propertyType, converter, converterContext);
 	}
 
 	void setDeser(final int ref, final Object d) {

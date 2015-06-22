@@ -128,11 +128,14 @@ public class SerializationMap extends AbstractSerializationObject {
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
-	 * net.cadrian.jsonref.JsonConverter)
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final net.cadrian.jsonref.JsonConverter.Context converterContext) {
 		throw new SerializationException(
 				"SerializationMap not used for deserialization");
 	}

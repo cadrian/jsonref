@@ -15,14 +15,17 @@
  */
 package net.cadrian.jsonref.data;
 
+import java.lang.reflect.Field;
+
 import net.cadrian.jsonref.SerializationData;
+import net.cadrian.jsonref.SerializationException;
 
 /**
  * Any kind of {@link SerializationData} that can be referenced by a
  * {@linkplain SerializationHeap heap}
  */
 public abstract class AbstractSerializationObject extends
-AbstractSerializationData {
+		AbstractSerializationData {
 
 	final Class<?> type;
 	final int ref;
@@ -30,6 +33,32 @@ AbstractSerializationData {
 	AbstractSerializationObject(final Class<?> type, final int ref) {
 		this.type = type;
 		this.ref = ref;
+	}
+
+	/**
+	 * Find the field with the given name and type
+	 *
+	 * @param name
+	 *            the name of the field
+	 * @param type
+	 *            the type of the field
+	 *
+	 * @return the field, or <code>null</code> if not found
+	 */
+	public static Field getField(final String name, final Class<?> type) {
+		Class<?> actualType = type;
+		do {
+			try {
+				return actualType.getDeclaredField(name);
+			} catch (final NoSuchFieldException e) {
+				actualType = actualType.getSuperclass();
+			} catch (final SecurityException e) {
+				throw new SerializationException(
+						"Security error while looking for field "
+								+ actualType.getName() + "." + name, e);
+			}
+		} while (actualType != Object.class);
+		return null;
 	}
 
 	/**

@@ -16,16 +16,25 @@
 package net.cadrian.jsonref.data;
 
 import net.cadrian.jsonref.JsonConverter;
+import net.cadrian.jsonref.JsonConverter.Context;
 import net.cadrian.jsonref.SerializationData;
 
 abstract class AbstractSerializationData implements SerializationData {
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.cadrian.jsonref.SerializationData#fromJson(java.lang.Class,
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
+	 */
 	@Override
 	public <T> T fromJson(final Class<? extends T> wantedType,
-			final JsonConverter converter) {
-		return fromJson(null, wantedType, converter);
+			final JsonConverter converter, final Context converterContext) {
+		return fromJson(null, wantedType, converter, converterContext);
 	}
 
 	abstract <T> T fromJson(SerializationHeap heap,
-			Class<? extends T> propertyType, JsonConverter converter);
+			Class<? extends T> propertyType, JsonConverter converter,
+			Context converterContext);
 }

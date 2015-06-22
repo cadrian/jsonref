@@ -53,7 +53,8 @@ public class SerializationValue extends AbstractSerializationData {
 	 */
 	public SerializationValue(final String value) {
 		this.type = null;
-		this.value = this.string = value;
+		this.value = null;
+		this.string = value;
 	}
 
 	/**
@@ -76,7 +77,7 @@ public class SerializationValue extends AbstractSerializationData {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
@@ -89,29 +90,37 @@ public class SerializationValue extends AbstractSerializationData {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(java.lang
-	 * .Class, net.cadrian.jsonref.JsonConverter)
+	 * .Class, net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	public <T> T fromJson(final Class<? extends T> wantedType,
-			final JsonConverter converter) {
+			final JsonConverter converter,
+			final net.cadrian.jsonref.JsonConverter.Context converterContext) {
+		if (string == null) {
+			return null;
+		}
 		return converter.fromJson(string, wantedType);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
-	 * net.cadrian.jsonref.JsonConverter)
+	 * net.cadrian.jsonref.JsonConverter,
+	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	<T> T fromJson(final SerializationHeap heap,
-			final Class<? extends T> propertyType, final JsonConverter converter) {
-		return fromJson(propertyType, converter);
+			final Class<? extends T> propertyType,
+			final JsonConverter converter,
+			final net.cadrian.jsonref.JsonConverter.Context converterContext) {
+		return fromJson(propertyType, converter, converterContext);
 	}
 
 }

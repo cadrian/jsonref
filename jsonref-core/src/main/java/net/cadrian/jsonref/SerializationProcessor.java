@@ -23,13 +23,12 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import net.cadrian.jsonref.Prettiness.Context;
+import net.cadrian.jsonref.data.AbstractSerializationObject;
 import net.cadrian.jsonref.data.SerializationArray;
 import net.cadrian.jsonref.data.SerializationHeap;
 import net.cadrian.jsonref.data.SerializationMap;
@@ -145,16 +144,18 @@ class SerializationProcessor {
 			if (context == null) {
 				context = Prettiness.COMPACT.newContext();
 			}
-
+			final JsonConverter.Context converterContext = converter
+					.getNewContext();
 			final Map<ObjectReference, ObjectReference> refs = new HashMap<>();
 
 			final SerializationData data = getData(null, refs, value,
-					value.getClass(), converter);
+					value.getClass(), converter, converterContext);
 			if (data != null) {
 				data.toJson(out, converter, context);
 			} else {
 				final SerializationHeap heap = new SerializationHeap();
-				getData(heap, refs, value, value.getClass(), converter);
+				getData(heap, refs, value, value.getClass(), converter,
+						converterContext);
 				heap.toJson(out, converter, context);
 			}
 		}
@@ -163,7 +164,8 @@ class SerializationProcessor {
 	private SerializationData getData(final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
 			final Object value, final Class<?> propertyType,
-			final JsonConverter converter) {
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		final SerializationData data;
 		if (value == null) {
 			data = new SerializationValue(propertyType, null);
@@ -173,7 +175,8 @@ class SerializationProcessor {
 			data = new SerializationValue(propertyType,
 					((Class<?>) value).getName());
 		} else if (heap != null) {
-			data = getHeapData(value, propertyType, heap, refs, converter);
+			data = getHeapData(value, propertyType, heap, refs, converter,
+					converterContext);
 		} else {
 			data = null;
 		}
@@ -183,24 +186,25 @@ class SerializationProcessor {
 	private SerializationData getHeapData(final Object value,
 			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonConverter converter) {
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		final SerializationData result;
 		final ObjectReference ref = refs.get(new ObjectReference(value, 0));
 		if (ref != null) {
 			result = new SerializationRef(ref.getId());
 		} else if (propertyType.isArray()) {
 			result = serializeArray(new ObjectReference(value, heap.nextRef()),
-					propertyType, heap, refs, converter);
+					propertyType, heap, refs, converter, converterContext);
 		} else if (Collection.class.isAssignableFrom(propertyType)) {
 			result = serializeCollection(
 					new ObjectReference(value, heap.nextRef()), propertyType,
-					heap, refs, converter);
+					heap, refs, converter, converterContext);
 		} else if (Map.class.isAssignableFrom(propertyType)) {
 			result = serializeMap(new ObjectReference(value, heap.nextRef()),
-					propertyType, heap, refs, converter);
+					propertyType, heap, refs, converter, converterContext);
 		} else {
 			final int objectId = serializeObject(new ObjectReference(value,
-					heap.nextRef()), heap, refs, converter);
+					heap.nextRef()), heap, refs, converter, converterContext);
 			result = new SerializationRef(objectId);
 		}
 		return result;
@@ -209,7 +213,8 @@ class SerializationProcessor {
 	private SerializationArray serializeArray(final ObjectReference ref,
 			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonConverter converter) {
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		final Object array = ref.getObject();
 		final int n = Array.getLength(array);
 		final Class<?> componentType = propertyType.getComponentType();
@@ -220,7 +225,7 @@ class SerializationProcessor {
 
 		for (int i = 0; i < n; i++) {
 			result.add(getData(heap, refs, Array.get(array, i), componentType,
-					converter));
+					converter, converterContext));
 		}
 		return result;
 	}
@@ -228,7 +233,8 @@ class SerializationProcessor {
 	private SerializationArray serializeCollection(final ObjectReference ref,
 			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonConverter converter) {
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 
 		@SuppressWarnings("unchecked")
 		final Collection<Object> array = (Collection<Object>) ref.getObject();
@@ -238,7 +244,8 @@ class SerializationProcessor {
 		refs.put(ref, ref);
 
 		for (final Object object : array) {
-			result.add(getData(heap, refs, object, Object.class, converter));
+			result.add(getData(heap, refs, object, Object.class, converter,
+					converterContext));
 		}
 		return result;
 	}
@@ -246,7 +253,8 @@ class SerializationProcessor {
 	private SerializationMap serializeMap(final ObjectReference ref,
 			final Class<?> propertyType, final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonConverter converter) {
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 
 		@SuppressWarnings("unchecked")
 		final Map<Object, Object> map = (Map<Object, Object>) ref.getObject();
@@ -258,8 +266,11 @@ class SerializationProcessor {
 		for (final Map.Entry<Object, Object> entry : map.entrySet()) {
 			final Object key = entry.getKey();
 			final Object value = entry.getValue();
-			result.add(getData(heap, refs, key, Object.class, converter),
-					getData(heap, refs, value, Object.class, converter));
+			result.add(
+					getData(heap, refs, key, Object.class, converter,
+							converterContext),
+							getData(heap, refs, value, Object.class, converter,
+									converterContext));
 		}
 		return result;
 	}
@@ -267,7 +278,8 @@ class SerializationProcessor {
 	private int serializeObject(final ObjectReference ref,
 			final SerializationHeap heap,
 			final Map<ObjectReference, ObjectReference> refs,
-			final JsonConverter converter) {
+			final JsonConverter converter,
+			final JsonConverter.Context converterContext) {
 		assert ref.getObject() != null : "null object?!";
 		assert !refs.containsKey(ref) : "duplicated ref " + ref.getId();
 
@@ -279,49 +291,41 @@ class SerializationProcessor {
 		heap.add(result);
 		refs.put(ref, ref);
 
-		result.add("class", getData(heap, refs, type, Class.class, converter));
+		result.add(
+				"class",
+				getData(heap, refs, type, Class.class, converter,
+						converterContext));
 		try {
 			final BeanInfo beanInfo = Introspector.getBeanInfo(type);
 			final PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
 
 			for (final PropertyDescriptor pd : pds) {
-				if (!converter.isTransient(getField(type, pd.getName()))) {
-					final Method reader = pd.getReadMethod();
-					if (reader != null) {
-						final SerializationData data;
+				final String propertyName = pd.getName();
+				final Field propertyField = AbstractSerializationObject
+						.getField(propertyName, type);
+				if (!converter.isTransient(pd, propertyField, converterContext)) {
+					final SerializationData data;
 
-						final Object value = reader.invoke(object);
-						final Class<?> propertyType = reader.getReturnType();
-						data = getData(heap, refs, value, propertyType,
-								converter);
-
-						if (data != null) {
-							result.add(pd.getName(), data);
-						}
+					final Object value = converter.getPropertyValue(pd, object,
+							converterContext);
+					final Class<?> propertyType = converter.getPropertyType(pd,
+							propertyField, converterContext);
+					converter.nestIn(pd, propertyField, object, value,
+							converterContext);
+					data = getData(heap, refs, value, propertyType, converter,
+							converterContext);
+					if (data != null) {
+						result.add(propertyName, data);
 					}
+					converter.nestOut(pd, propertyField, object, value,
+							converterContext);
 				}
 			}
-		} catch (final IntrospectionException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
+		} catch (final IntrospectionException e) {
 			throw new SerializationException(e);
 		}
 
 		return result.getRef();
-	}
-
-	private Field getField(Class<?> type, final String name) {
-		do {
-			try {
-				return type.getDeclaredField(name);
-			} catch (final NoSuchFieldException e) {
-				type = type.getSuperclass();
-			} catch (final SecurityException e) {
-				throw new SerializationException(
-						"Security error while looking for field "
-								+ type.getName() + "." + name, e);
-			}
-		} while (type != Object.class);
-		return null;
 	}
 
 }
