@@ -14,7 +14,7 @@ case x"$1" in
         unset DISPLAY
 
         pinentry=$(which pinentry-curses)
-        if [[ -x "$pinentry" ]]; then
+        if [ -x "$pinentry" ]; then
             export GPG_TTY=$(tty)
             exec gpg-agent --pinentry-program $pinentry --daemon $0 __release__
         else
