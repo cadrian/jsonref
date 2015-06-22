@@ -26,7 +26,7 @@ case x"$1" in
     x__release__)
         # The actual release happens now.
         mvn release:clean
-        if release:prepare; then
+        if mvn release:prepare; then
             mvn release:perform
         else
             mvn release:rollback
