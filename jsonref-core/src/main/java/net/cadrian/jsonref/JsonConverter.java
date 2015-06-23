@@ -107,20 +107,24 @@ public interface JsonConverter {
 	 *
 	 * @param pd
 	 *            the property descriptor
+	 * @param propertyField
+	 *            the field to get
 	 * @param object
 	 *            the object to get the value from
 	 * @param context
 	 *            the serialization context
 	 * @return the value
 	 */
-	Object getPropertyValue(PropertyDescriptor pd, Object object,
-			Context context);
+	Object getPropertyValue(PropertyDescriptor pd, Field propertyField,
+			Object object, Context context);
 
 	/**
 	 * Set the value of the property
 	 *
 	 * @param pd
 	 *            the property descriptor
+	 * @param propertyField
+	 *            the field to set
 	 * @param object
 	 *            the object to set the value to
 	 * @param value
@@ -128,8 +132,8 @@ public interface JsonConverter {
 	 * @param context
 	 *            the serialization context
 	 */
-	void setPropertyValue(PropertyDescriptor pd, Object object, Object value,
-			Context context);
+	void setPropertyValue(PropertyDescriptor pd, Field propertyField,
+			Object object, Object value, Context context);
 
 	/**
 	 * Get the type of the value of the property

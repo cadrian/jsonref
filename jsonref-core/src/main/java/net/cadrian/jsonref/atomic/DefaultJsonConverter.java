@@ -47,7 +47,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#getNewContext()
 	 */
 	@Override
@@ -57,7 +57,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#toJson(java.lang.Object)
 	 */
 	@Override
@@ -71,7 +71,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#fromJson(java.lang.String,
 	 * java.lang.Class)
 	 */
@@ -85,7 +85,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#isValue(java.lang.Class)
 	 */
 	@Override
@@ -95,7 +95,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#newCollection(java.lang.Class)
 	 */
 	@Override
@@ -122,7 +122,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#newMap(java.lang.Class)
 	 */
 	@Override
@@ -149,7 +149,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.cadrian.jsonref.JsonConverter#isTransient(java.beans.PropertyDescriptor
 	 * , java.lang.reflect.Field, net.cadrian.jsonref.JsonConverter.Context)
@@ -166,12 +166,13 @@ public class DefaultJsonConverter implements JsonConverter {
 	 * (non-Javadoc)
 	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#getPropertyValue(java.beans.
-	 * PropertyDescriptor, java.lang.Object,
+	 * PropertyDescriptor, java.lang.reflect.Field, java.lang.Object,
 	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	public Object getPropertyValue(final PropertyDescriptor pd,
-			final Object object, final Context context) {
+			final Field propertyField, final Object object,
+			final Context context) {
 		try {
 			return pd.getReadMethod().invoke(object);
 		} catch (IllegalAccessException | IllegalArgumentException
@@ -182,14 +183,15 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#setPropertyValue(java.beans.
-	 * PropertyDescriptor, java.lang.Object, java.lang.Object,
-	 * net.cadrian.jsonref.JsonConverter.Context)
+	 * PropertyDescriptor, java.lang.reflect.Field, java.lang.Object,
+	 * java.lang.Object, net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
 	public void setPropertyValue(final PropertyDescriptor pd,
-			final Object object, final Object value, final Context context) {
+			final Field propertyField, final Object object, final Object value,
+			final Context context) {
 		try {
 			pd.getWriteMethod().invoke(object, value);
 		} catch (IllegalAccessException | IllegalArgumentException
@@ -200,7 +202,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#startSerialization(java.beans.
 	 * PropertyDescriptor, java.lang.reflect.Field, java.lang.Object,
 	 * java.lang.Object, net.cadrian.jsonref.JsonConverter.Context)
@@ -213,7 +215,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#endSerialization(java.beans.
 	 * PropertyDescriptor, java.lang.reflect.Field, java.lang.Object,
 	 * java.lang.Object, net.cadrian.jsonref.JsonConverter.Context)
@@ -226,7 +228,7 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see net.cadrian.jsonref.JsonConverter#getPropertyType(java.beans.
 	 * PropertyDescriptor, java.lang.reflect.Field,
 	 * net.cadrian.jsonref.JsonConverter.Context)

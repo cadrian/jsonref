@@ -73,7 +73,7 @@ public class SerializationObject extends AbstractSerializationObject {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see net.cadrian.jsonref.SerializationData#toJson(java.io.Writer,
 	 * net.cadrian.jsonref.JsonConverter,
 	 * net.cadrian.jsonref.Prettiness.Context)
@@ -96,7 +96,7 @@ public class SerializationObject extends AbstractSerializationObject {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * net.cadrian.jsonref.data.AbstractSerializationData#fromJson(net.cadrian
 	 * .jsonref.data.SerializationHeap, java.lang.Class,
@@ -136,7 +136,7 @@ public class SerializationObject extends AbstractSerializationObject {
 
 		@SuppressWarnings("rawtypes")
 		final Map<Object, Object> result = (Map<Object, Object>) converter
-				.newMap((Class<Map>) propertyType);
+		.newMap((Class<Map>) propertyType);
 		if (heap != null) {
 			heap.setDeser(ref, result);
 		}
@@ -190,8 +190,8 @@ public class SerializationObject extends AbstractSerializationObject {
 						final Object value = properties.get(propertyName)
 								.fromJson(heap, pd.getPropertyType(),
 										converter, converterContext);
-						converter.setPropertyValue(pd, result, value,
-								converterContext);
+						converter.setPropertyValue(pd, propertyField, result,
+								value, converterContext);
 						converter.nestOut(pd, propertyField, result, value,
 								converterContext);
 					}

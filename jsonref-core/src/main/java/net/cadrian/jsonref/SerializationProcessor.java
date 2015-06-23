@@ -269,8 +269,8 @@ class SerializationProcessor {
 			result.add(
 					getData(heap, refs, key, Object.class, converter,
 							converterContext),
-							getData(heap, refs, value, Object.class, converter,
-									converterContext));
+					getData(heap, refs, value, Object.class, converter,
+							converterContext));
 		}
 		return result;
 	}
@@ -306,8 +306,8 @@ class SerializationProcessor {
 				if (!converter.isTransient(pd, propertyField, converterContext)) {
 					final SerializationData data;
 
-					final Object value = converter.getPropertyValue(pd, object,
-							converterContext);
+					final Object value = converter.getPropertyValue(pd,
+							propertyField, object, converterContext);
 					final Class<?> propertyType = converter.getPropertyType(pd,
 							propertyField, converterContext);
 					converter.nestIn(pd, propertyField, object, value,
