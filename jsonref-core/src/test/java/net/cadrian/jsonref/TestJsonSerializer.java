@@ -69,7 +69,7 @@ public class TestJsonSerializer {
 							final Field propertyField, final Context context) {
 						return super.isTransient(pd, propertyField, context)
 								|| (propertyField.getDeclaringClass() == Pojo.class && propertyField
-										.getType() == Pojo.class);
+								.getType() == Pojo.class);
 					}
 				});
 		final Pojo a = new Pojo();
@@ -146,67 +146,67 @@ public class TestJsonSerializer {
 		when(
 				converter.isTransient(any(PropertyDescriptor.class),
 						any(Field.class), eq(context))).thenAnswer(
-				new Answer<Boolean>() {
-					@Override
-					public Boolean answer(final InvocationOnMock invocation)
-							throws Throwable {
-						assertTrue(endList.size() <= startList.size());
-						final boolean result;
-						final PropertyDescriptor pd = invocation.getArgumentAt(
-								0, PropertyDescriptor.class);
-						if (pd.getPropertyType() == Pojo.class) {
-							result = startList.size() >= 2;
-							if (result) {
-								assertArrayEquals(new Object[] { a, b },
-										startList.get(0));
-								assertArrayEquals(new Object[] { b, a },
-										startList.get(1));
-							}
-						} else {
-							result = defaultConverter.isTransient(pd,
-									invocation.getArgumentAt(1, Field.class),
-									context);
-						}
-						return result;
-					}
-				});
+								new Answer<Boolean>() {
+									@Override
+									public Boolean answer(final InvocationOnMock invocation)
+											throws Throwable {
+										assertTrue(endList.size() <= startList.size());
+										final boolean result;
+										final PropertyDescriptor pd = invocation.getArgumentAt(
+												0, PropertyDescriptor.class);
+										if (pd.getPropertyType() == Pojo.class) {
+											result = startList.size() >= 2;
+											if (result) {
+												assertArrayEquals(new Object[] { a, b },
+														startList.get(0));
+												assertArrayEquals(new Object[] { b, a },
+														startList.get(1));
+											}
+										} else {
+											result = defaultConverter.isTransient(pd,
+													invocation.getArgumentAt(1, Field.class),
+													context);
+										}
+										return result;
+									}
+								});
 
 		when(
 				converter.getPropertyType(any(PropertyDescriptor.class),
 						any(Field.class), eq(context))).then(
-				new Answer<Class<?>>() {
-					@Override
-					public Class<?> answer(final InvocationOnMock invocation)
-							throws Throwable {
-						final PropertyDescriptor pd = invocation.getArgumentAt(
-								0, PropertyDescriptor.class);
-						return pd.getPropertyType();
-					}
-				});
+								new Answer<Class<?>>() {
+									@Override
+									public Class<?> answer(final InvocationOnMock invocation)
+											throws Throwable {
+										final PropertyDescriptor pd = invocation.getArgumentAt(
+												0, PropertyDescriptor.class);
+										return pd.getPropertyType();
+									}
+								});
 		when(
 				converter.getPropertyValue(any(PropertyDescriptor.class),
 						any(Field.class), any(Object.class), eq(context)))
-				.thenAnswer(new Answer<Object>() {
-					@Override
-					public Object answer(final InvocationOnMock invocation)
-							throws Throwable {
-						final PropertyDescriptor pd = invocation.getArgumentAt(
-								0, PropertyDescriptor.class);
-						if (pd.getPropertyType() == Pojo.class) {
-							final Pojo p = (Pojo) pd.getReadMethod().invoke(
-									invocation.getArgumentAt(1, Object.class));
-							if (p == null) {
-								return p;
+						.thenAnswer(new Answer<Object>() {
+							@Override
+							public Object answer(final InvocationOnMock invocation)
+									throws Throwable {
+								final PropertyDescriptor pd = invocation.getArgumentAt(
+										0, PropertyDescriptor.class);
+								if (pd.getPropertyType() == Pojo.class) {
+									final Pojo p = (Pojo) pd.getReadMethod().invoke(
+											invocation.getArgumentAt(2, Object.class));
+									if (p == null) {
+										return p;
+									}
+									final Pojo result = new Pojo();
+									result.setValue(p.getValue());
+									result.setTimestamp(p.getTimestamp());
+									return result;
+								}
+								return pd.getReadMethod().invoke(
+										invocation.getArgumentAt(2, Object.class));
 							}
-							final Pojo result = new Pojo();
-							result.setValue(p.getValue());
-							result.setTimestamp(p.getTimestamp());
-							return result;
-						}
-						return pd.getReadMethod().invoke(
-								invocation.getArgumentAt(1, Object.class));
-					}
-				});
+						});
 		when(converter.isAtomicValue(any(Class.class))).thenAnswer(
 				new Answer<Boolean>() {
 					@Override
