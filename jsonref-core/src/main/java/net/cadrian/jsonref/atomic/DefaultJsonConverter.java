@@ -43,6 +43,49 @@ import net.cadrian.jsonref.SerializationException;
 public class DefaultJsonConverter implements JsonConverter {
 
 	private static class DefaultContext implements Context {
+		private final PropertyDescriptor propertyDescriptor;
+		private final Field propertyField;
+
+		DefaultContext(final PropertyDescriptor propertyDescriptor,
+				final Field propertyField) {
+			this.propertyDescriptor = propertyDescriptor;
+			this.propertyField = propertyField;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 *
+		 * @see
+		 * net.cadrian.jsonref.JsonConverter.Context#getPropertyDescriptor()
+		 */
+		@Override
+		public PropertyDescriptor getPropertyDescriptor() {
+			return propertyDescriptor;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 *
+		 * @see net.cadrian.jsonref.JsonConverter.Context#getPropertyField()
+		 */
+		@Override
+		public Field getPropertyField() {
+			return propertyField;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 *
+		 * @see
+		 * net.cadrian.jsonref.JsonConverter.Context#withProperty(java.beans
+		 * .PropertyDescriptor, java.lang.reflect.Field)
+		 */
+		@Override
+		public Context withProperty(
+				final PropertyDescriptor propertyDescriptor,
+				final Field propertyField) {
+			return new DefaultContext(propertyDescriptor, propertyField);
+		}
 	}
 
 	/*
@@ -52,7 +95,7 @@ public class DefaultJsonConverter implements JsonConverter {
 	 */
 	@Override
 	public Context getNewContext() {
-		return new DefaultContext();
+		return new DefaultContext(null, null);
 	}
 
 	/*
@@ -150,31 +193,29 @@ public class DefaultJsonConverter implements JsonConverter {
 	/*
 	 * (non-Javadoc)
 	 *
-	 * @see
-	 * net.cadrian.jsonref.JsonConverter#isTransient(java.beans.PropertyDescriptor
-	 * , java.lang.reflect.Field, net.cadrian.jsonref.JsonConverter.Context)
+	 * @see net.cadrian.jsonref.JsonConverter#isTransient(net.cadrian.jsonref.
+	 * JsonConverter.Context)
 	 */
 	@Override
-	public boolean isTransient(final PropertyDescriptor pd,
-			final Field propertyField, final Context context) {
+	public boolean isTransient(final Context context) {
 		// By default, all the actual fields are serialized
+		final Field propertyField = context.getPropertyField();
 		return propertyField == null
-				|| (pd.getPropertyType() != propertyField.getType());
+				|| (context.getPropertyDescriptor().getPropertyType() != propertyField
+				.getType());
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.cadrian.jsonref.JsonConverter#getPropertyValue(java.beans.
-	 * PropertyDescriptor, java.lang.reflect.Field, java.lang.Object,
+	 * @see net.cadrian.jsonref.JsonConverter#getPropertyValue(java.lang.Object,
 	 * net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
-	public Object getPropertyValue(final PropertyDescriptor pd,
-			final Field propertyField, final Object object,
-			final Context context) {
+	public Object getPropertyValue(final Context context, final Object object) {
 		try {
-			return pd.getReadMethod().invoke(object);
+			return context.getPropertyDescriptor().getReadMethod()
+					.invoke(object);
 		} catch (IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			throw new SerializationException(e);
@@ -183,17 +224,16 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see net.cadrian.jsonref.JsonConverter#setPropertyValue(java.beans.
-	 * PropertyDescriptor, java.lang.reflect.Field, java.lang.Object,
+	 *
+	 * @see net.cadrian.jsonref.JsonConverter#setPropertyValue(java.lang.Object,
 	 * java.lang.Object, net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
-	public void setPropertyValue(final PropertyDescriptor pd,
-			final Field propertyField, final Object object, final Object value,
-			final Context context) {
+	public void setPropertyValue(final Context context, final Object object,
+			final Object value) {
 		try {
-			pd.getWriteMethod().invoke(object, value);
+			context.getPropertyDescriptor().getWriteMethod()
+			.invoke(object, value);
 		} catch (IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException e) {
 			throw new SerializationException(e);
@@ -202,42 +242,39 @@ public class DefaultJsonConverter implements JsonConverter {
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see net.cadrian.jsonref.JsonConverter#startSerialization(java.beans.
-	 * PropertyDescriptor, java.lang.reflect.Field, java.lang.Object,
+	 *
+	 * @see net.cadrian.jsonref.JsonConverter#nestIn(java.lang.Object,
 	 * java.lang.Object, net.cadrian.jsonref.JsonConverter.Context)
 	 */
 	@Override
-	public void nestIn(final PropertyDescriptor pd, final Field propertyField,
-			final Object object, final Object value, final Context context) {
+	public void nestIn(final Context context, final Object object,
+			final Object value) {
+		// nothing by default
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see net.cadrian.jsonref.JsonConverter#nestOut(java.lang.Object,
+	 * java.lang.Object, net.cadrian.jsonref.JsonConverter.Context)
+	 */
+	@Override
+	public void nestOut(final Context context, final Object object,
+			final Object value) {
 		// nothing by default
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.cadrian.jsonref.JsonConverter#endSerialization(java.beans.
-	 * PropertyDescriptor, java.lang.reflect.Field, java.lang.Object,
-	 * java.lang.Object, net.cadrian.jsonref.JsonConverter.Context)
+	 * @see
+	 * net.cadrian.jsonref.JsonConverter#getPropertyType(net.cadrian.jsonref
+	 * .JsonConverter.Context)
 	 */
 	@Override
-	public void nestOut(final PropertyDescriptor pd, final Field propertyField,
-			final Object object, final Object value, final Context context) {
-		// nothing by default
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.cadrian.jsonref.JsonConverter#getPropertyType(java.beans.
-	 * PropertyDescriptor, java.lang.reflect.Field,
-	 * net.cadrian.jsonref.JsonConverter.Context)
-	 */
-	@Override
-	public Class<?> getPropertyType(final PropertyDescriptor pd,
-			final Field propertyField, final Context context) {
-		assert !isTransient(pd, propertyField, context);
-		return pd.getPropertyType();
+	public Class<?> getPropertyType(final Context context) {
+		assert !isTransient(context);
+		return context.getPropertyDescriptor().getPropertyType();
 	}
 
 	private static final Map<Class, Class> MOST_SUITABLE_COLLECTIONS = new HashMap<>();

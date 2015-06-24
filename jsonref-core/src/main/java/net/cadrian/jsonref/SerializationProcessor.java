@@ -269,8 +269,8 @@ class SerializationProcessor {
 			result.add(
 					getData(heap, refs, key, Object.class, converter,
 							converterContext),
-					getData(heap, refs, value, Object.class, converter,
-							converterContext));
+							getData(heap, refs, value, Object.class, converter,
+									converterContext));
 		}
 		return result;
 	}
@@ -303,22 +303,22 @@ class SerializationProcessor {
 				final String propertyName = pd.getName();
 				final Field propertyField = AbstractSerializationObject
 						.getField(propertyName, type);
-				if (!converter.isTransient(pd, propertyField, converterContext)) {
+				final JsonConverter.Context ctx = converterContext
+						.withProperty(pd, propertyField);
+				if (!converter.isTransient(ctx)) {
 					final SerializationData data;
 
-					final Object value = converter.getPropertyValue(pd,
-							propertyField, object, converterContext);
-					final Class<?> propertyType = converter.getPropertyType(pd,
-							propertyField, converterContext);
-					converter.nestIn(pd, propertyField, object, value,
-							converterContext);
+					final Object value = converter
+							.getPropertyValue(ctx, object);
+					final Class<?> propertyType = converter
+							.getPropertyType(ctx);
+					converter.nestIn(ctx, object, value);
 					data = getData(heap, refs, value, propertyType, converter,
 							converterContext);
 					if (data != null) {
 						result.add(propertyName, data);
 					}
-					converter.nestOut(pd, propertyField, object, value,
-							converterContext);
+					converter.nestOut(ctx, object, value);
 				}
 			}
 		} catch (final IntrospectionException e) {
@@ -327,5 +327,4 @@ class SerializationProcessor {
 
 		return result.getRef();
 	}
-
 }

@@ -183,17 +183,15 @@ public class SerializationObject extends AbstractSerializationObject {
 				if (properties.containsKey(propertyName)) {
 					final Field propertyField = getField(propertyName,
 							propertyType);
-					if (!converter.isTransient(pd, propertyField,
-							converterContext)) {
-						converter.nestIn(pd, propertyField, result, null,
-								converterContext);
+					final JsonConverter.Context ctx = converterContext
+							.withProperty(pd, propertyField);
+					if (!converter.isTransient(ctx)) {
+						converter.nestIn(ctx, result, null);
 						final Object value = properties.get(propertyName)
 								.fromJson(heap, pd.getPropertyType(),
 										converter, converterContext);
-						converter.setPropertyValue(pd, propertyField, result,
-								value, converterContext);
-						converter.nestOut(pd, propertyField, result, value,
-								converterContext);
+						converter.setPropertyValue(ctx, result, value);
+						converter.nestOut(ctx, result, value);
 					}
 				}
 			}

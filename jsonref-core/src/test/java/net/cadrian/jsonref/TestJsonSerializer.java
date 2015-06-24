@@ -21,7 +21,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,6 +31,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.cadrian.jsonref.JsonConverter.Context;
 import net.cadrian.jsonref.atomic.DefaultJsonConverter;
 
 import org.junit.Test;
@@ -65,10 +65,12 @@ public class TestJsonSerializer {
 		final JsonSerializer ser = new JsonSerializer(
 				new DefaultJsonConverter() {
 					@Override
-					public boolean isTransient(final PropertyDescriptor pd,
-							final Field propertyField, final Context context) {
-						return super.isTransient(pd, propertyField, context)
-								|| (propertyField.getDeclaringClass() == Pojo.class && propertyField
+					public boolean isTransient(final Context context) {
+						if (super.isTransient(context)) {
+							return true;
+						}
+						final Field propertyField = context.getPropertyField();
+						return (propertyField.getDeclaringClass() == Pojo.class && propertyField
 								.getType() == Pojo.class);
 					}
 				});
@@ -96,6 +98,27 @@ public class TestJsonSerializer {
 		final DefaultJsonConverter defaultConverter = new DefaultJsonConverter();
 		final JsonConverter converter = mock(JsonConverter.class);
 		final JsonConverter.Context context = mock(JsonConverter.Context.class);
+
+		final Answer<JsonConverter.Context> contextWithProperty = new Answer<JsonConverter.Context>() {
+			@Override
+			public Context answer(final InvocationOnMock invocation)
+					throws Throwable {
+				final PropertyDescriptor pd = invocation.getArgumentAt(0,
+						PropertyDescriptor.class);
+				final Field pf = invocation.getArgumentAt(1, Field.class);
+				final JsonConverter.Context result = mock(JsonConverter.Context.class);
+				when(result.getPropertyDescriptor()).thenReturn(pd);
+				when(result.getPropertyField()).thenReturn(pf);
+				when(
+						result.withProperty(any(PropertyDescriptor.class),
+								any(Field.class))).thenAnswer(this);
+				return result;
+			}
+		};
+		when(
+				context.withProperty(any(PropertyDescriptor.class),
+						any(Field.class))).thenAnswer(contextWithProperty);
+
 		final JsonSerializer ser = new JsonSerializer(converter);
 		when(converter.getNewContext()).thenReturn(context,
 				(JsonConverter.Context) null);
@@ -115,98 +138,97 @@ public class TestJsonSerializer {
 			@Override
 			public Void answer(final InvocationOnMock invocation)
 					throws Throwable {
-				if (invocation.getArgumentAt(0, PropertyDescriptor.class)
-						.getName().equals("reference")) {
-					final Object o2 = invocation.getArgumentAt(2, Object.class);
-					final Object o3 = invocation.getArgumentAt(3, Object.class);
-					startList.add(new Object[] { o2, o3 });
+				final JsonConverter.Context context = invocation.getArgumentAt(
+						0, JsonConverter.Context.class);
+				if ("reference".equals(context.getPropertyDescriptor()
+						.getName())) {
+					final Object o0 = invocation.getArgumentAt(1, Object.class);
+					final Object o1 = invocation.getArgumentAt(2, Object.class);
+					startList.add(new Object[] { o0, o1 });
 				}
 				return null;
 			}
-		}).when(converter).nestIn(any(PropertyDescriptor.class),
-				any(Field.class), any(Object.class), any(Object.class),
-				eq(context));
+		}).when(converter).nestIn(any(JsonConverter.Context.class),
+				any(Object.class), any(Object.class));
 
 		doAnswer(new Answer<Void>() {
 			@Override
 			public Void answer(final InvocationOnMock invocation)
 					throws Throwable {
-				if (invocation.getArgumentAt(0, PropertyDescriptor.class)
-						.getName().equals("reference")) {
-					final Object o2 = invocation.getArgumentAt(2, Object.class);
-					final Object o3 = invocation.getArgumentAt(3, Object.class);
-					endList.add(new Object[] { o2, o3 });
+				final JsonConverter.Context context = invocation.getArgumentAt(
+						0, JsonConverter.Context.class);
+				if ("reference".equals(context.getPropertyDescriptor()
+						.getName())) {
+					final Object o0 = invocation.getArgumentAt(1, Object.class);
+					final Object o1 = invocation.getArgumentAt(2, Object.class);
+					endList.add(new Object[] { o0, o1 });
 				}
 				return null;
 			}
-		}).when(converter).nestOut(any(PropertyDescriptor.class),
-				any(Field.class), any(Object.class), any(Object.class),
-				eq(context));
+		}).when(converter).nestOut(any(JsonConverter.Context.class),
+				any(Object.class), any(Object.class));
 
-		when(
-				converter.isTransient(any(PropertyDescriptor.class),
-						any(Field.class), eq(context))).thenAnswer(
-								new Answer<Boolean>() {
-									@Override
-									public Boolean answer(final InvocationOnMock invocation)
-											throws Throwable {
-										assertTrue(endList.size() <= startList.size());
-										final boolean result;
-										final PropertyDescriptor pd = invocation.getArgumentAt(
-												0, PropertyDescriptor.class);
-										if (pd.getPropertyType() == Pojo.class) {
-											result = startList.size() >= 2;
-											if (result) {
-												assertArrayEquals(new Object[] { a, b },
-														startList.get(0));
-												assertArrayEquals(new Object[] { b, a },
-														startList.get(1));
-											}
-										} else {
-											result = defaultConverter.isTransient(pd,
-													invocation.getArgumentAt(1, Field.class),
-													context);
-										}
-										return result;
-									}
-								});
-
-		when(
-				converter.getPropertyType(any(PropertyDescriptor.class),
-						any(Field.class), eq(context))).then(
-								new Answer<Class<?>>() {
-									@Override
-									public Class<?> answer(final InvocationOnMock invocation)
-											throws Throwable {
-										final PropertyDescriptor pd = invocation.getArgumentAt(
-												0, PropertyDescriptor.class);
-										return pd.getPropertyType();
-									}
-								});
-		when(
-				converter.getPropertyValue(any(PropertyDescriptor.class),
-						any(Field.class), any(Object.class), eq(context)))
-						.thenAnswer(new Answer<Object>() {
-							@Override
-							public Object answer(final InvocationOnMock invocation)
-									throws Throwable {
-								final PropertyDescriptor pd = invocation.getArgumentAt(
-										0, PropertyDescriptor.class);
-								if (pd.getPropertyType() == Pojo.class) {
-									final Pojo p = (Pojo) pd.getReadMethod().invoke(
-											invocation.getArgumentAt(2, Object.class));
-									if (p == null) {
-										return p;
-									}
-									final Pojo result = new Pojo();
-									result.setValue(p.getValue());
-									result.setTimestamp(p.getTimestamp());
-									return result;
-								}
-								return pd.getReadMethod().invoke(
-										invocation.getArgumentAt(2, Object.class));
+		when(converter.isTransient(any(JsonConverter.Context.class)))
+				.thenAnswer(new Answer<Boolean>() {
+					@Override
+					public Boolean answer(final InvocationOnMock invocation)
+							throws Throwable {
+						assertTrue(endList.size() <= startList.size());
+						final boolean result;
+						final JsonConverter.Context context = invocation
+								.getArgumentAt(0, JsonConverter.Context.class);
+						final PropertyDescriptor pd = context
+								.getPropertyDescriptor();
+						if (pd.getPropertyType() == Pojo.class) {
+							result = startList.size() >= 2;
+							if (result) {
+								assertArrayEquals(new Object[] { a, b },
+										startList.get(0));
+								assertArrayEquals(new Object[] { b, a },
+										startList.get(1));
 							}
-						});
+						} else {
+							result = defaultConverter.isTransient(context);
+						}
+						return result;
+					}
+				});
+
+		when(converter.getPropertyType(any(JsonConverter.Context.class))).then(
+				new Answer<Class<?>>() {
+					@Override
+					public Class<?> answer(final InvocationOnMock invocation)
+							throws Throwable {
+						final JsonConverter.Context context = invocation
+								.getArgumentAt(0, JsonConverter.Context.class);
+						return context.getPropertyDescriptor()
+								.getPropertyType();
+					}
+				});
+		when(
+				converter.getPropertyValue(any(JsonConverter.Context.class),
+						any(Object.class))).thenAnswer(new Answer<Object>() {
+			@Override
+			public Object answer(final InvocationOnMock invocation)
+					throws Throwable {
+				final JsonConverter.Context context = invocation.getArgumentAt(
+						0, JsonConverter.Context.class);
+				final PropertyDescriptor pd = context.getPropertyDescriptor();
+				if (pd.getPropertyType() == Pojo.class) {
+					final Pojo p = (Pojo) pd.getReadMethod().invoke(
+							invocation.getArgumentAt(1, Object.class));
+					if (p == null) {
+						return p;
+					}
+					final Pojo result = new Pojo();
+					result.setValue(p.getValue());
+					result.setTimestamp(p.getTimestamp());
+					return result;
+				}
+				return pd.getReadMethod().invoke(
+						invocation.getArgumentAt(1, Object.class));
+			}
+		});
 		when(converter.isAtomicValue(any(Class.class))).thenAnswer(
 				new Answer<Boolean>() {
 					@Override
