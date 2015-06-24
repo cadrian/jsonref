@@ -58,6 +58,11 @@ public class TestJsonSerializer {
 		assertEquals(
 				"<{\"class\":\"net.cadrian.jsonref.Pojo\",\"reference\":$1,\"timestamp\":\"2015-06-10T12:00:00.000\",\"value\":\"a\"},{\"class\":\"net.cadrian.jsonref.Pojo\",\"reference\":$0,\"timestamp\":null,\"value\":\"b\"}>",
 				json);
+
+		final Pojo d = (Pojo) ser.fromJson(json);
+		assertEquals(a, d);
+		assertEquals(b, d.getReference());
+		assertSame(d, d.getReference().getReference());
 	}
 
 	@Test
@@ -169,30 +174,30 @@ public class TestJsonSerializer {
 				any(Object.class), any(Object.class));
 
 		when(converter.isTransient(any(JsonConverter.Context.class)))
-				.thenAnswer(new Answer<Boolean>() {
-					@Override
-					public Boolean answer(final InvocationOnMock invocation)
-							throws Throwable {
-						assertTrue(endList.size() <= startList.size());
-						final boolean result;
-						final JsonConverter.Context context = invocation
-								.getArgumentAt(0, JsonConverter.Context.class);
-						final PropertyDescriptor pd = context
-								.getPropertyDescriptor();
-						if (pd.getPropertyType() == Pojo.class) {
-							result = startList.size() >= 2;
-							if (result) {
-								assertArrayEquals(new Object[] { a, b },
-										startList.get(0));
-								assertArrayEquals(new Object[] { b, a },
-										startList.get(1));
-							}
-						} else {
-							result = defaultConverter.isTransient(context);
-						}
-						return result;
+		.thenAnswer(new Answer<Boolean>() {
+			@Override
+			public Boolean answer(final InvocationOnMock invocation)
+					throws Throwable {
+				assertTrue(endList.size() <= startList.size());
+				final boolean result;
+				final JsonConverter.Context context = invocation
+						.getArgumentAt(0, JsonConverter.Context.class);
+				final PropertyDescriptor pd = context
+						.getPropertyDescriptor();
+				if (pd.getPropertyType() == Pojo.class) {
+					result = startList.size() >= 2;
+					if (result) {
+						assertArrayEquals(new Object[] { a, b },
+								startList.get(0));
+						assertArrayEquals(new Object[] { b, a },
+								startList.get(1));
 					}
-				});
+				} else {
+					result = defaultConverter.isTransient(context);
+				}
+				return result;
+			}
+		});
 
 		when(converter.getPropertyType(any(JsonConverter.Context.class))).then(
 				new Answer<Class<?>>() {
@@ -208,27 +213,27 @@ public class TestJsonSerializer {
 		when(
 				converter.getPropertyValue(any(JsonConverter.Context.class),
 						any(Object.class))).thenAnswer(new Answer<Object>() {
-			@Override
-			public Object answer(final InvocationOnMock invocation)
-					throws Throwable {
-				final JsonConverter.Context context = invocation.getArgumentAt(
-						0, JsonConverter.Context.class);
-				final PropertyDescriptor pd = context.getPropertyDescriptor();
-				if (pd.getPropertyType() == Pojo.class) {
-					final Pojo p = (Pojo) pd.getReadMethod().invoke(
-							invocation.getArgumentAt(1, Object.class));
-					if (p == null) {
-						return p;
-					}
-					final Pojo result = new Pojo();
-					result.setValue(p.getValue());
-					result.setTimestamp(p.getTimestamp());
-					return result;
-				}
-				return pd.getReadMethod().invoke(
-						invocation.getArgumentAt(1, Object.class));
-			}
-		});
+							@Override
+							public Object answer(final InvocationOnMock invocation)
+									throws Throwable {
+								final JsonConverter.Context context = invocation.getArgumentAt(
+										0, JsonConverter.Context.class);
+								final PropertyDescriptor pd = context.getPropertyDescriptor();
+								if (pd.getPropertyType() == Pojo.class) {
+									final Pojo p = (Pojo) pd.getReadMethod().invoke(
+											invocation.getArgumentAt(1, Object.class));
+									if (p == null) {
+										return p;
+									}
+									final Pojo result = new Pojo();
+									result.setValue(p.getValue());
+									result.setTimestamp(p.getTimestamp());
+									return result;
+								}
+								return pd.getReadMethod().invoke(
+										invocation.getArgumentAt(1, Object.class));
+							}
+						});
 		when(converter.isAtomicValue(any(Class.class))).thenAnswer(
 				new Answer<Boolean>() {
 					@Override
